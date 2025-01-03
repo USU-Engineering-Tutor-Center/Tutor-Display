@@ -1,4 +1,8 @@
 import math
+from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtCore import Qt
+import sys
+
 
 def calculate_grid(desired_squares, height, width):
     """
@@ -68,9 +72,19 @@ def print_grid(square_size, height, width):
     #print extra lines wit fit the height
     print(((" @ " * width) + "\n") * (height - (square_size * vertical_num)))
 
-if __name__ == "__main__":
-    rectangle_height = 36
-    rectangle_width = 55
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Tutor Center")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.showFullScreen()
 
-    main_square_size = calculate_grid(145, rectangle_height, rectangle_width)
-    print_grid(main_square_size, rectangle_height, rectangle_width)
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.close()
+
+if __name__ == "__main__":
+    app = QApplication([])
+    window = MainWindow()
+
+    sys.exit(app.exec())
