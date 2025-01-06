@@ -104,40 +104,60 @@ class MainWindow(QMainWindow):
             self.close()
 
 class TutorCard(QFrame):
+    """
+    defines the layout of a tutor card so that it can easily be copied
+
+    Methods:
+        __init__(self, tutor_name, profile_image_path, major, progress, schedule)
+            defines the layout of the tutor card based on the supplied arguments
+    """
     def __init__(self, tutor_name, profile_image_path, major, progress, schedule):
+        """
+        defines the layout of the tutor card based on the supplied arguments
+        :param tutor_name: the name of the tutor
+        :param profile_image_path: the path to the tutor
+        :param major: the major of the tutor
+        :param progress: the progress (senior, junior, etc.) of the tutor
+        :param schedule: what hours the tutor is here for
+        """
         super().__init__()
 
+        #set up the layout
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 5, 0, 5)
         layout.setSpacing(5)
         self.setLayout(layout)
 
+        #add the name label
         tutor_name_label = QLabel(tutor_name)
         tutor_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         tutor_name_label.setStyleSheet("font-weight: bold; font-size: 16px; color: black")
+        layout.addWidget(tutor_name_label)
 
+        #add the image label
         profile_image_label = QLabel()
         pixmap = QPixmap(profile_image_path)
         profile_image_label.setPixmap(pixmap)
         profile_image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # profile_image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        layout.addWidget(profile_image_label)
 
+        #add the major label
         major_label = QLabel(f"Major: {major} ({progress})")
         major_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         major_label.setStyleSheet("font-size: 12px; color: black")
+        layout.addWidget(major_label)
 
+        #add the schedule label
         schedule_label= QLabel(f"Here from {schedule}")
         schedule_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         schedule_label.setStyleSheet("font-size: 12px; color: black")
-
-        layout.addWidget(tutor_name_label)
-        layout.addWidget(profile_image_label)
-        layout.addWidget(major_label)
         layout.addWidget(schedule_label)
 
+        #format the overall card
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self.setStyleSheet("TutorCard {background-color: lightblue; border: 5px solid orange}")
 
+#run the program
 if __name__ == "__main__":
     app = QApplication([])
     window = MainWindow()
