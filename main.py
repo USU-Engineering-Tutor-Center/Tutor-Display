@@ -34,45 +34,7 @@ def calculate_grid(desired_squares, height, width):
                 vertical_num += 1
                 square_size = math.floor(height / vertical_num)
 
-    return square_size, vertical_num, horizontal_num
-
-def print_grid(square_size, height, width):
-    """
-    prints a grid based on the given parameters
-    :param square_size: the size of the square to be printed
-    :param height: the height of the rectangle that the squares will be in
-    :param width: the width of the rectangle that the squares will be in
-    """
-    print_buf = ""
-    vertical_num = math.floor(height / square_size)
-    horizontal_num = math.floor(width / square_size)
-
-    #loop through all rows
-    for y in range(vertical_num):
-        #start with a different color each time
-        print_x = y % 2 == 0
-
-        #loop through all the columns
-        for x in range(horizontal_num):
-            #print the color
-            if print_x:
-                print_buf += ("\033[31m @ \033[0m" * square_size)
-            else:
-                print_buf += ("\033[34m @ \033[0m" * square_size)
-
-            #alternate color
-            print_x = not print_x
-
-        #pad the end with @ so fit to the width
-        print_buf += (" @ " * (width - (square_size * horizontal_num)))
-        print_buf += "\n"
-
-        #print and then reset the print buffer
-        print(print_buf * square_size, end="")
-        print_buf = ""
-
-    #print extra lines wit fit the height
-    print(((" @ " * width) + "\n") * (height - (square_size * vertical_num)))
+    return vertical_num, horizontal_num
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -88,9 +50,9 @@ class MainWindow(QMainWindow):
         with open('data.json', 'r') as file:
             tutor_data_array = json.load(file)
 
-            _size, rows, cols = calculate_grid(len(tutor_data_array),
-                                               QGuiApplication.primaryScreen().size().height(),
-                                               QGuiApplication.primaryScreen().size().width())
+            rows, cols = calculate_grid(len(tutor_data_array),
+                                        QGuiApplication.primaryScreen().size().height(),
+                                        QGuiApplication.primaryScreen().size().width())
 
             for i, tutor_data in enumerate(tutor_data_array):
                 widget = TutorCard(
