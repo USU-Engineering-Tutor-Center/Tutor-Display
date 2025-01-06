@@ -1,6 +1,6 @@
 import math
-
-from PyQt6.QtGui import QPixmap
+import json
+from PyQt6.QtGui import QPixmap, QGuiApplication
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame
 from PyQt6.QtCore import Qt
 import sys
@@ -12,7 +12,7 @@ def calculate_grid(desired_squares, height, width):
     :param desired_squares: the number of square that you want to fit
     :param height: the height of the rectangle
     :param width: the width of the rectangle
-    :return: the size of the largest tillable square
+    :return: a tuple with the size of the largest tillable square, the number of columns and the number of rows
     """
 
     horizontal_num = 1
@@ -34,7 +34,7 @@ def calculate_grid(desired_squares, height, width):
                 vertical_num += 1
                 square_size = math.floor(height / vertical_num)
 
-    return square_size
+    return square_size, vertical_num, horizontal_num
 
 def print_grid(square_size, height, width):
     """
@@ -85,12 +85,23 @@ class MainWindow(QMainWindow):
         layout = QGridLayout()
         central_widget.setLayout(layout)
 
-        for row in range(5):
-            for col in range(5):
-                if row == 4 and col > 2:
-                    break
-                widget = TutorCard("Frodo", "Images/Frodo.png", "Bioengineering", "Senior", "9:00 - 5:00")
-                layout.addWidget(widget, row, col)
+        with open('data.json', 'r') as file:
+            tutor_data_array = json.load(file)
+
+            _size, rows, cols = calculate_grid(len(tutor_data_array),
+                                               QGuiApplication.primaryScreen().size().height(),
+                                               QGuiApplication.primaryScreen().size().width())
+
+            for i, tutor_data in enumerate(tutor_data_array):
+                widget = TutorCard(
+                    tutor_data['tutorName'],
+                    tutor_data['profilePath'],
+                    tutor_data['major'],
+                    tutor_data['class'],
+                    tutor_data['schedule']
+                )
+                layout.addWidget(widget, math.floor(i/(rows + 1)) + 1, (i % cols) + 1)
+                print(math.floor(i/rows), (i % cols))
 
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(5)
