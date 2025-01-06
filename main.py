@@ -37,24 +37,44 @@ def calculate_grid(desired_squares, height, width):
     return vertical_num, horizontal_num
 
 class MainWindow(QMainWindow):
+    """
+    The main window of the program
+
+    Methods:
+        __init__(self)
+            formats the screen, parses the data.json file, and adds all the tutor widgets.
+
+        keyPressEvent(self, event)
+            is responsible for closing the program when the esc key is pressed
+    """
     def __init__(self):
+        """
+        formats the screen, parses the data.json file, and adds all the tutor widgets
+        """
+
         super().__init__()
+
+        #set up the main screen
         self.setWindowTitle("Tutor Center")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QGridLayout()
         central_widget.setLayout(layout)
 
+        #parse the json file
         with open('data.json', 'r') as file:
+            #load the file
             tutor_data_array = json.load(file)
 
+            #calculate the optimal grid layout
             rows, cols = calculate_grid(len(tutor_data_array),
                                         QGuiApplication.primaryScreen().size().height(),
                                         QGuiApplication.primaryScreen().size().width())
 
+            #add each tutor to the grid layout
             for i, tutor_data in enumerate(tutor_data_array):
+                #set up the widget
                 widget = TutorCard(
                     tutor_data['tutorName'],
                     tutor_data['profilePath'],
@@ -62,15 +82,24 @@ class MainWindow(QMainWindow):
                     tutor_data['class'],
                     tutor_data['schedule']
                 )
-                layout.addWidget(widget, math.floor(i/(rows + 1)) + 1, (i % cols) + 1)
-                print(math.floor(i/rows), (i % cols))
 
+                #add the widget to the correct spot
+                layout.addWidget(widget, math.floor(i/(rows + 1)) + 1, (i % cols) + 1)
+
+        #format the grid layout
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(5)
 
+        #show the screen
         self.showFullScreen()
 
     def keyPressEvent(self, event):
+        """
+        is responsible for closing the program when the esc key is pressed
+        :param event: the event to react to
+        """
+
+        #if the key is esc then close the program
         if event.key() == Qt.Key.Key_Escape:
             self.close()
 
