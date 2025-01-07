@@ -153,9 +153,24 @@ class TutorCard(QFrame):
         schedule_label.setStyleSheet("font-size: 12px; color: black")
         layout.addWidget(schedule_label)
 
+        #get the border color from the tutors major
+        match major:
+            case "Biological Engineering":
+                color = 'blue'
+            case "Civil Engineering":
+                color = 'green'
+            case "Electrical Engineering":
+                color = 'yellow'
+            case "Computer Engineering":
+                color = 'orange'
+            case "Mechanical Engineering":
+                color = 'red'
+            case _:
+                color = 'black'
+
         #format the overall card
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
-        self.setStyleSheet("TutorCard {background-color: lightblue; border: 5px solid orange}")
+        self.setStyleSheet(f"TutorCard {{background-color: lightblue; border: 5px solid {color}}}")
 
 #run the program
 if __name__ == "__main__":
