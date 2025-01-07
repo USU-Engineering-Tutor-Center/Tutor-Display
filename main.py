@@ -61,6 +61,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         layout = QGridLayout()
         central_widget.setLayout(layout)
+        self.setStyleSheet("background-color: #ede1be")
 
         #parse the json file
         with open('data.json', 'r') as file:
@@ -87,8 +88,8 @@ class MainWindow(QMainWindow):
                 layout.addWidget(widget, math.floor(i/(rows + 1)) + 1, (i % cols) + 1)
 
         #format the grid layout
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(5)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(10)
 
         #show the screen
         self.showFullScreen()
@@ -131,7 +132,7 @@ class TutorCard(QFrame):
         #add the name label
         tutor_name_label = QLabel(tutor_name)
         tutor_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        tutor_name_label.setStyleSheet("font-weight: bold; font-size: 16px; color: black")
+        tutor_name_label.setStyleSheet("font-weight: bold; font-size: 16px; color: black; background-color: transparent")
         layout.addWidget(tutor_name_label)
 
         #add the image label
@@ -139,18 +140,19 @@ class TutorCard(QFrame):
         pixmap = QPixmap(profile_image_path)
         profile_image_label.setPixmap(pixmap)
         profile_image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        profile_image_label.setStyleSheet("background-color: transparent")
         layout.addWidget(profile_image_label)
 
         #add the major label
         major_label = QLabel(f"Major: {major} ({progress})")
         major_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        major_label.setStyleSheet("font-size: 12px; color: black")
+        major_label.setStyleSheet("font-size: 12px; color: black; background-color: transparent")
         layout.addWidget(major_label)
 
         #add the schedule label
         schedule_label= QLabel(f"Here from {schedule}")
         schedule_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        schedule_label.setStyleSheet("font-size: 12px; color: black")
+        schedule_label.setStyleSheet("font-size: 12px; color: black; background-color: transparent")
         layout.addWidget(schedule_label)
 
         #get the border color from the tutors major
@@ -170,7 +172,7 @@ class TutorCard(QFrame):
 
         #format the overall card
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
-        self.setStyleSheet(f"TutorCard {{background-color: lightblue; border: 5px solid {color}}}")
+        self.setStyleSheet(f"TutorCard {{background-color: white; border: 5px solid {color}}}")
 
 #run the program
 if __name__ == "__main__":
