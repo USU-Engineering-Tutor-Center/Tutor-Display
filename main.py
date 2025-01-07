@@ -2,7 +2,7 @@ import math
 import json
 from PyQt6.QtGui import QPixmap, QGuiApplication
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QSize
 import sys
 
 
@@ -68,6 +68,8 @@ class MainWindow(QMainWindow):
             #load the file
             tutor_data_array = json.load(file)
 
+            tutor_data_array = tutor_data_array[:-8]
+
             #calculate the optimal grid layout
             rows, cols = calculate_grid(len(tutor_data_array),
                                         QGuiApplication.primaryScreen().size().height(),
@@ -85,7 +87,7 @@ class MainWindow(QMainWindow):
                 )
 
                 #add the widget to the correct spot
-                layout.addWidget(widget, math.floor(i/(rows + 1)) + 1, (i % cols) + 1)
+                layout.addWidget(widget, math.floor(i/cols) + 1, (i % cols) + 1)
 
         #format the grid layout
         layout.setContentsMargins(10, 10, 10, 10)
@@ -171,8 +173,11 @@ class TutorCard(QFrame):
                 color = 'black'
 
         #format the overall card
-        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
         self.setStyleSheet(f"TutorCard {{background-color: white; border: 5px solid {color}}}")
+
+    def sizeHint(self):
+        return QSize(640, 480)
 
 #run the program
 if __name__ == "__main__":
