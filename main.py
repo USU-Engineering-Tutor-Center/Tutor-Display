@@ -1,40 +1,10 @@
 import math
 import json
 from PyQt6.QtGui import QPixmap, QGuiApplication
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame, \
+    QHBoxLayout
 from PyQt6.QtCore import Qt, QSize
 import sys
-
-
-def calculate_grid(desired_squares, height, width):
-    """
-    calculates the largest tillable square that will fit in the given rectangle
-    :param desired_squares: the number of square that you want to fit
-    :param height: the height of the rectangle
-    :param width: the width of the rectangle
-    :return: a tuple with the size of the largest tillable square, the number of columns and the number of rows
-    """
-
-    horizontal_num = 1
-    vertical_num = 1
-    square_size = min(width, height)
-
-    #add in the squares 1 by 1
-    for square_count in range(1, desired_squares + 1):
-        #recalculate grid if there are no free spots available
-        if vertical_num * horizontal_num < square_count:
-            horizontal_dif = width - (horizontal_num * square_size)
-            vertical_dif = height - (vertical_num * square_size)
-
-            #find the biggest gap and squeeze in a new square
-            if horizontal_dif > vertical_dif:
-                horizontal_num += 1
-                square_size = math.floor(width / horizontal_num)
-            else:
-                vertical_num += 1
-                square_size = math.floor(height / vertical_num)
-
-    return vertical_num, horizontal_num
 
 class MainWindow(QMainWindow):
     """
@@ -54,15 +24,6 @@ class MainWindow(QMainWindow):
 
         super().__init__()
 
-        #set up the main screen
-        self.setWindowTitle("Tutor Center")
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        layout = QGridLayout()
-        central_widget.setLayout(layout)
-        self.setStyleSheet("background-color: #ede1be")
-
         #parse the json file
         with open('data.json', 'r') as file:
             #load the file
@@ -70,28 +31,64 @@ class MainWindow(QMainWindow):
 
             tutor_data_array = tutor_data_array[:-8]
 
-            #calculate the optimal grid layout
-            rows, cols = calculate_grid(len(tutor_data_array),
-                                        QGuiApplication.primaryScreen().size().height(),
-                                        QGuiApplication.primaryScreen().size().width())
+        self.screen_size = QGuiApplication.primaryScreen().size()
+        self.spacing = 10
 
-            #add each tutor to the grid layout
-            for i, tutor_data in enumerate(tutor_data_array):
-                #set up the widget
-                widget = TutorCard(
-                    tutor_data['tutorName'],
-                    tutor_data['profilePath'],
-                    tutor_data['major'],
-                    tutor_data['class'],
-                    tutor_data['schedule']
-                )
+        #set up the main screen
+        self.setWindowTitle("Tutor Center")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setStyleSheet("background-color: #cce9e8")
 
-                #add the widget to the correct spot
-                layout.addWidget(widget, math.floor(i/cols) + 1, (i % cols) + 1)
+        #set up the central widget
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
 
-        #format the grid layout
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(10)
+        #set up the top layout
+        top_layout = QGridLayout()
+        top_layout.setSpacing(0)
+        top_layout.setContentsMargins(0, 0, 0, 0)
+        central_widget.setLayout(top_layout)
+
+        #set up the title
+        title = QLabel("Welcome to The Engineering Tutor Center")
+        title.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width()*0.06)))
+        title.setStyleSheet("background-color: #00706d")
+        top_layout.addWidget(title)
+
+        #set up the base widget
+        base_widget = QWidget()
+        base_widget.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width()*0.94)))
+        top_layout.addWidget(base_widget)
+
+        base_layout = QHBoxLayout()
+        base_widget.setLayout(base_layout)
+        base_layout.setSpacing(0)
+        base_layout.setContentsMargins(0,0,0,0)
+
+        #TODO: This doesn't work. Good luck
+        tutor_list_widget = QWidget()
+        tutor_list_widget.setFixedSize(QSize(int(self.screen_size.width()*0.61),base_widget.size().height()-2*self.spacing))
+        tutor_list_widget.setStyleSheet("background-color: #ffffff; border: 5px solid yellow")
+
+        base_layout.addWidget(tutor_list_widget)
+
+        #add each tutor to the grid layout
+        # for i, tutor_data in enumerate(tutor_data_array):
+        #     #set up the widget
+        #     widget = TutorCard(
+        #         tutor_data['tutorName'],
+        #         tutor_data['profilePath'],
+        #         tutor_data['major'],
+        #         tutor_data['class'],
+        #         tutor_data['schedule']
+        #     )
+
+            #add the widget to the correct spot
+        #     layout.addWidget(widget, math.floor(i/cols) + 1, (i % cols) + 1)
+        #
+        # #format the grid layout
+        # layout.setContentsMargins(10, 10, 10, 10)
+        # layout.setSpacing(10)
 
         #show the screen
         self.showFullScreen()
