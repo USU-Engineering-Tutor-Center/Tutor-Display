@@ -12,7 +12,6 @@ class ExcelManager:
         self.wednesday_schedule = None
         self.tuesday_schedule = None
         self.monday_schedule = None
-        self.last_update = None
 
     def fetch_schedule(self):
         url = os.environ["TUTOR_CENTER_PATH"]
@@ -41,25 +40,28 @@ class ExcelManager:
             self.wednesday_schedule =   pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=21, nrows=6).values.tolist()
             self.thursday_schedule =    pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=30, nrows=6).values.tolist()
             self.friday_schedule =      pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=39, nrows=6).values.tolist()
-
-            self.last_update = datetime.now().timestamp()
         else:
             return False
 
     def get_today_schedule(self):
         self.fetch_schedule()
 
+        today_schedule = None
+
         match datetime.today().weekday():
             case 0:
-                return self.monday_schedule
+                today_schedule = self.monday_schedule
             case 1:
-                return self.tuesday_schedule
+                today_schedule = self.tuesday_schedule
             case 2:
-                return self.wednesday_schedule
+                today_schedule = self.wednesday_schedule
             case 3:
-                return self.thursday_schedule
+                today_schedule = self.thursday_schedule
             case 4:
-                return self.friday_schedule
+                today_schedule = self.friday_schedule
+
+        today_schedule.pop(2)
+        return today_schedule
 
 if __name__ == "__main__":
     em = ExcelManager()
