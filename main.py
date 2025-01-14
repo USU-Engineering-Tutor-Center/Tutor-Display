@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePol
     QHBoxLayout
 from PyQt6.QtCore import Qt, QSize
 import sys
+from excel import ExcelManager
 
 class MainWindow(QMainWindow):
     """
@@ -30,6 +31,9 @@ class MainWindow(QMainWindow):
             tutor_data_array = json.load(file)
 
             tutor_data_array = tutor_data_array[:-8]
+
+        em = ExcelManager()
+        schedule = em.get_today_schedule()
 
         self.screen_size = QGuiApplication.primaryScreen().size()
         self.spacing = 20
@@ -97,6 +101,12 @@ class MainWindow(QMainWindow):
 
         schedule_layout = QGridLayout()
         schedule_widget.setLayout(schedule_layout)
+        schedule_layout.setSpacing(0)
+        schedule_layout.setContentsMargins(0, 0, 0, 0)
+
+        for row in range(5):
+            for col in range(16):
+                schedule_layout.addWidget(ScheduleCell(schedule[row][col]), row + 1, col + 1)
 
         #add each tutor to the grid layout
         # for i, tutor_data in enumerate(tutor_data_array):
@@ -201,6 +211,27 @@ class TutorCard(QFrame):
 
     def sizeHint(self):
         return QSize(640, 480)
+
+class ScheduleCell(QLabel):
+    def __init__(self, major):
+        super().__init__()
+
+        match major:
+            case "MA":
+                color = 'red'
+            case "CE":
+                color = 'green'
+            case "B":
+                color = 'blue'
+            case "EL":
+                color = 'yellow'
+            case "CP":
+                color = 'orange'
+            case _:
+                color = 'white'
+
+        self.setStyleSheet(f"background-color: {color}")
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
 #run the program
 if __name__ == "__main__":
