@@ -32,7 +32,8 @@ class MainWindow(QMainWindow):
             tutor_data_array = tutor_data_array[:-8]
 
         self.screen_size = QGuiApplication.primaryScreen().size()
-        self.spacing = 10
+        self.spacing = 20
+        self.corner_radius = 40
 
         #set up the main screen
         self.setWindowTitle("Tutor Center")
@@ -41,10 +42,11 @@ class MainWindow(QMainWindow):
 
         #set up the central widget
         central_widget = QWidget()
+        central_widget.setFixedSize(QSize(self.screen_size.width(), self.screen_size.height()))
         self.setCentralWidget(central_widget)
 
         #set up the top layout
-        top_layout = QGridLayout()
+        top_layout = QVBoxLayout()
         top_layout.setSpacing(0)
         top_layout.setContentsMargins(0, 0, 0, 0)
         central_widget.setLayout(top_layout)
@@ -57,20 +59,44 @@ class MainWindow(QMainWindow):
 
         #set up the base widget
         base_widget = QWidget()
-        base_widget.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width()*0.94)))
+        base_widget.setFixedSize(QSize(self.screen_size.width(), self.screen_size.height()-int(self.screen_size.width()*0.06)))
         top_layout.addWidget(base_widget)
 
         base_layout = QHBoxLayout()
         base_widget.setLayout(base_layout)
-        base_layout.setSpacing(0)
-        base_layout.setContentsMargins(0,0,0,0)
+        base_layout.setSpacing(self.spacing)
+        base_layout.setContentsMargins(self.spacing, self.spacing, self.spacing, self.spacing)
 
-        #TODO: This doesn't work. Good luck
         tutor_list_widget = QWidget()
         tutor_list_widget.setFixedSize(QSize(int(self.screen_size.width()*0.61),base_widget.size().height()-2*self.spacing))
-        tutor_list_widget.setStyleSheet("background-color: #ffffff; border: 5px solid yellow")
-
+        tutor_list_widget.setStyleSheet(f"background-color: #ffffff; border-radius: {self.corner_radius}")
         base_layout.addWidget(tutor_list_widget)
+
+        right_section_widget = QWidget()
+        base_layout.addWidget(right_section_widget)
+
+        right_section_layout = QVBoxLayout()
+        right_section_widget.setLayout(right_section_layout)
+        right_section_layout.setSpacing(0)
+        right_section_layout.setContentsMargins(0, 0, 0, 0)
+
+        sign_in_widget = QLabel("Please Sign In!")
+        description_widget = QLabel("Tutors are wearing colored lanyards and name tags")
+        right_section_layout.addWidget(sign_in_widget)
+        right_section_layout.addWidget(description_widget)
+
+        schedule_title_widget = QLabel("Today's Schedule")
+        schedule_title_widget.setFixedHeight(int(self.screen_size.width() * 0.039))
+        schedule_title_widget.setStyleSheet(f"background-color: #00706d; border-top-left-radius: {self.corner_radius}; border-top-right-radius: {self.corner_radius}")
+        right_section_layout.addWidget(schedule_title_widget)
+
+        schedule_widget = QWidget()
+        schedule_widget.setFixedHeight(int(self.screen_size.width()*0.321))
+        schedule_widget.setStyleSheet(f"background-color: white; border-bottom-right-radius: {self.corner_radius}; border-bottom-left-radius: {self.corner_radius}")
+        right_section_layout.addWidget(schedule_widget)
+
+        schedule_layout = QGridLayout()
+        schedule_widget.setLayout(schedule_layout)
 
         #add each tutor to the grid layout
         # for i, tutor_data in enumerate(tutor_data_array):
