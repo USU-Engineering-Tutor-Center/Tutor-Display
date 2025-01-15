@@ -2,9 +2,10 @@ import math
 import json
 from PyQt6.QtGui import QPixmap, QGuiApplication
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame, \
-    QHBoxLayout
+    QHBoxLayout, QLayout
 from PyQt6.QtCore import Qt, QSize
 import sys
+
 from excel import ExcelManager
 
 class MainWindow(QMainWindow):
@@ -34,6 +35,8 @@ class MainWindow(QMainWindow):
 
         em = ExcelManager()
         schedule = em.get_today_schedule()
+
+        majors = ["MAE", "CEE", "BENG", "ECE", "CMPE"]
 
         self.screen_size = QGuiApplication.primaryScreen().size()
         self.spacing = 20
@@ -106,7 +109,45 @@ class MainWindow(QMainWindow):
 
         for row in range(5):
             for col in range(16):
-                schedule_layout.addWidget(ScheduleCell(schedule[row][col]), row + 1, col + 1)
+                schedule_layout.addWidget(ScheduleCell(schedule[row][col], row, col), row + 3, col + 3)
+
+        cell_width = int((self.screen_size.width() - tutor_list_widget.width() - 3 * self.spacing)/19)
+        print(cell_width)
+
+        spacer = QLabel()
+        spacer.setFixedSize(QSize(cell_width, self.spacing))
+        spacer.setStyleSheet("background-color: transparent")
+
+        spacer2 = QLabel()
+        spacer2.setFixedSize(QSize(cell_width, self.spacing))
+        spacer2.setStyleSheet("background-color: transparent")
+
+        spacer3 = QLabel()
+        spacer3.setFixedSize(QSize(cell_width, self.spacing))
+        spacer3.setStyleSheet("background-color: transparent")
+
+        schedule_layout.addWidget(spacer, 8, 19)
+        schedule_layout.addWidget(spacer2, 1, 1)
+        schedule_layout.addWidget(spacer3, 1, 2)
+
+        for i, major in enumerate(majors):
+            temp = QLabel(major)
+            temp.setStyleSheet("color: black")
+            temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            schedule_layout.addWidget(temp, i + 3, 1, 1, 2)
+
+        for i in range(9):
+            temp = QLabel(f"{(i+8)%12 + 1}:00")
+            temp.setStyleSheet("color: black")
+            temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            temp.setFixedHeight(30)
+            schedule_layout.addWidget(temp, 2, i*2 + 2, 1, 2)
+            #
+            # if i == 8:
+            #     temp.setAlignment(Qt.AlignmentFlag.AlignRight)
+            #
+            # if i == 0:
+            #     temp.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         #add each tutor to the grid layout
         # for i, tutor_data in enumerate(tutor_data_array):
@@ -213,7 +254,7 @@ class TutorCard(QFrame):
         return QSize(640, 480)
 
 class ScheduleCell(QLabel):
-    def __init__(self, major):
+    def __init__(self, major, row, col):
         super().__init__()
 
         match major:
@@ -230,7 +271,37 @@ class ScheduleCell(QLabel):
             case _:
                 color = 'white'
 
-        self.setStyleSheet(f"background-color: {color}")
+        top_border = 'transparent'
+        bottom_border = 'black'
+        left_border = 'transparent'
+        right_border = '#757575'
+
+        right_border_width = '2px'
+        left_border_width = '2px'
+        bottom_border_width = '3px'
+
+        right_border_style = 'solid'
+
+        if row == 0:
+            top_border = 'black'
+
+        if row == 4:
+            bottom_border = 'black'
+            bottom_border_width = '3px'
+
+        if col % 2 == 0:
+            right_border_width = '1px'
+            right_border_style = 'dashed'
+
+        if col == 0:
+            left_border = 'black'
+            left_border_width = '3px'
+
+        if col == 15:
+            right_border = "black"
+            right_border_width = '3px'
+
+        self.setStyleSheet(f"background-color: {color}; border-width: 4px {right_border_width} {bottom_border_width} {left_border_width}; border-style: solid {right_border_style} solid solid; border-color: {top_border} {right_border} {bottom_border} {left_border}")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
 #run the program
