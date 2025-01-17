@@ -1,9 +1,9 @@
 import math
 import json
-from PyQt6.QtGui import QPixmap, QGuiApplication
+from PyQt6.QtGui import QPixmap, QGuiApplication, QImage, QPainter, QPainterPath, QRegion
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame, \
-    QHBoxLayout, QLayout
-from PyQt6.QtCore import Qt, QSize
+    QHBoxLayout
+from PyQt6.QtCore import Qt, QSize, QRect
 import sys
 
 from excel import ExcelManager
@@ -142,30 +142,15 @@ class MainWindow(QMainWindow):
             temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
             temp.setFixedHeight(30)
             schedule_layout.addWidget(temp, 2, i*2 + 2, 1, 2)
-            #
-            # if i == 8:
-            #     temp.setAlignment(Qt.AlignmentFlag.AlignRight)
-            #
-            # if i == 0:
-            #     temp.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        #add each tutor to the grid layout
-        # for i, tutor_data in enumerate(tutor_data_array):
-        #     #set up the widget
-        #     widget = TutorCard(
-        #         tutor_data['tutorName'],
-        #         tutor_data['profilePath'],
-        #         tutor_data['major'],
-        #         tutor_data['class'],
-        #         tutor_data['schedule']
-        #     )
+        tutor_list_layout = QGridLayout()
+        tutor_list_layout.setSpacing(self.spacing)
+        tutor_list_layout.setContentsMargins(self.spacing, self.spacing, self.spacing, self.spacing)
+        tutor_list_widget.setLayout(tutor_list_layout)
 
-            #add the widget to the correct spot
-        #     layout.addWidget(widget, math.floor(i/cols) + 1, (i % cols) + 1)
-        #
-        # #format the grid layout
-        # layout.setContentsMargins(10, 10, 10, 10)
-        # layout.setSpacing(10)
+        for i in range(5):
+            for j in range(2):
+                tutor_list_layout.addWidget(TutorCard("Kyler", "Images/fredericks-kyler-400x600.jpg", "Computer Engineer", "Senior", "Here until 7:00"), i + 1, j + 1)
 
         #show the screen
         self.showFullScreen()
@@ -199,37 +184,22 @@ class TutorCard(QFrame):
         """
         super().__init__()
 
-        #set up the layout
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 5, 0, 5)
-        layout.setSpacing(5)
-        self.setLayout(layout)
+        self.spacing = 20
 
-        #add the name label
-        tutor_name_label = QLabel(tutor_name)
-        tutor_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        tutor_name_label.setStyleSheet("font-weight: bold; font-size: 16px; color: black; background-color: transparent")
-        layout.addWidget(tutor_name_label)
+        main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(self.spacing, self.spacing, self.spacing, self.spacing)
+        self.setLayout(main_layout)
 
-        #add the image label
-        profile_image_label = QLabel()
-        pixmap = QPixmap(profile_image_path)
-        profile_image_label.setPixmap(pixmap)
-        profile_image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        profile_image_label.setStyleSheet("background-color: transparent")
-        layout.addWidget(profile_image_label)
+        # profile_pic = QLabel()
+        # profile_pixmap = QPixmap(profile_image_path)
+        # profile_pixmap_scaled = profile_pixmap.scaled(profile_pic.size(), Qt.AspectRatioMode.KeepAspectRatio)
+        # profile_pic.setPixmap(profile_pixmap)
+        # profile_pic.setScaledContents(True)
+        # profile_pic.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        # profile_pic.setStyleSheet(f"border-radius: {40}")
 
-        #add the major label
-        major_label = QLabel(f"Major: {major} ({progress})")
-        major_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        major_label.setStyleSheet("font-size: 12px; color: black; background-color: transparent")
-        layout.addWidget(major_label)
-
-        #add the schedule label
-        schedule_label= QLabel(f"Here from {schedule}")
-        schedule_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        schedule_label.setStyleSheet("font-size: 12px; color: black; background-color: transparent")
-        layout.addWidget(schedule_label)
+        profile_pic = RoundedImageLabel(profile_image_path, 20)
+        main_layout.addWidget(profile_pic)
 
         #get the border color from the tutors major
         match major:
@@ -247,11 +217,74 @@ class TutorCard(QFrame):
                 color = 'black'
 
         #format the overall card
-        self.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-        self.setStyleSheet(f"TutorCard {{background-color: white; border: 5px solid {color}}}")
+        self.setStyleSheet(f"TutorCard {{background-color: #efefef; border: 2px solid #d9d9d9}}")
 
-    def sizeHint(self):
-        return QSize(640, 480)
+class RoundedImageLabel(QLabel):
+    """
+    taken from chat GPT+
+    """
+    def __init__(self, image_path, corner_radius=20):
+        super().__init__()
+        self.pixmap_original = QPixmap(image_path)  # Load the original image
+        self.corner_radius = corner_radius
+
+    def resizeEvent(self, event):
+        if self.pixmap_original.isNull():
+            return
+
+        # Scale the pixmap to fit the label, maintaining aspect ratio
+        scaled_pixmap = self.pixmap_original.scaled(
+            self.size(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+
+        # Create a new QPixmap for the result
+        rounded_pixmap = QPixmap(scaled_pixmap.size())
+        rounded_pixmap.fill(Qt.GlobalColor.transparent)
+
+        # Create the painter for drawing
+        painter = QPainter(rounded_pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # Create a QRegion for the full image
+        rect = scaled_pixmap.rect()
+        r = self.corner_radius
+
+        # Create region for the full rectangle (without rounded corners)
+        region = QRegion(rect)
+
+        # Increase the size of the square cutouts to remove the bottom gap
+        square_size = r + 1  # Slightly larger square size to ensure no gaps
+
+        # Create larger square cutouts for the left corners
+        square_top_left = QRegion(QRect(rect.left(), rect.top(), square_size, square_size))
+        square_bottom_left = QRegion(QRect(rect.left(), rect.bottom() - square_size + 1, square_size, square_size))
+
+        # Subtract the larger squares from the region
+        region -= square_top_left
+        region -= square_bottom_left
+
+        # Add the circular arcs back to the left corners (quarter circles)
+        arc_top_left = QRegion(QRect(rect.left(), rect.top(), r * 2, r * 2), QRegion.RegionType.Ellipse)
+        arc_bottom_left = QRegion(QRect(rect.left(), rect.bottom() - r * 2 + 1, r * 2, r * 2), QRegion.RegionType.Ellipse)
+
+        # Add the circular arcs back to the region
+        region += arc_top_left
+        region += arc_bottom_left
+
+        # Set the region as the clip region for the painter
+        painter.setClipRegion(region)
+
+        # Draw the image with the new region (rounded left corners)
+        painter.drawPixmap(0, 0, scaled_pixmap)
+        painter.end()
+
+        # Set the pixmap with the final result
+        self.setPixmap(rounded_pixmap)
+
+        super().resizeEvent(event)
+
 
 class ScheduleCell(QLabel):
     def __init__(self, major, row, col):
