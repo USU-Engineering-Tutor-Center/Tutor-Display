@@ -1,9 +1,9 @@
 import math
 import json
-from PyQt6.QtGui import QPixmap, QGuiApplication, QImage, QPainter, QPainterPath, QRegion
+from PyQt6.QtGui import QPixmap, QGuiApplication, QImage, QPainter, QPainterPath, QRegion, QColor, QPen
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame, \
     QHBoxLayout
-from PyQt6.QtCore import Qt, QSize, QRect
+from PyQt6.QtCore import Qt, QSize, QRect, QRectF
 import sys
 
 from excel import ExcelManager
@@ -198,7 +198,8 @@ class TutorCard(QFrame):
         # profile_pic.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         # profile_pic.setStyleSheet(f"border-radius: {40}")
 
-        profile_pic = RoundedImageLabel(profile_image_path, 20)
+        profile_pic = RoundedImageLabel(profile_image_path, "#d9d9d9",20)
+        profile_pic.setStyleSheet("background-color: #efefef")
         main_layout.addWidget(profile_pic)
 
         #get the border color from the tutors major
@@ -223,10 +224,11 @@ class RoundedImageLabel(QLabel):
     """
     taken from chat GPT+
     """
-    def __init__(self, image_path, corner_radius=20):
+    def __init__(self, image_path, border_color, corner_radius=20):
         super().__init__()
         self.pixmap_original = QPixmap(image_path)  # Load the original image
         self.corner_radius = corner_radius
+        self.border_color = border_color
 
     def resizeEvent(self, event):
         if self.pixmap_original.isNull():
@@ -247,43 +249,37 @@ class RoundedImageLabel(QLabel):
         painter = QPainter(rounded_pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        # Create a QRegion for the full image
-        rect = scaled_pixmap.rect()
-        r = self.corner_radius
+        # Draw the image with rounded corners (using clipping path)
+        path = QPainterPath()
+        r = self.corner_radius  # The radius of the corners
+        rect = QRectF(scaled_pixmap.rect())  # Convert QRect to QRectF
+        path.addRoundedRect(rect, r, r)  # Add rounded rect path
+        painter.setClipPath(path)  # Set clipping path to make the image fit inside
 
-        # Create region for the full rectangle (without rounded corners)
-        region = QRegion(rect)
-
-        # Increase the size of the square cutouts to remove the bottom gap
-        square_size = r + 1  # Slightly larger square size to ensure no gaps
-
-        # Create larger square cutouts for the left corners
-        square_top_left = QRegion(QRect(rect.left(), rect.top(), square_size, square_size))
-        square_bottom_left = QRegion(QRect(rect.left(), rect.bottom() - square_size + 1, square_size, square_size))
-
-        # Subtract the larger squares from the region
-        region -= square_top_left
-        region -= square_bottom_left
-
-        # Add the circular arcs back to the left corners (quarter circles)
-        arc_top_left = QRegion(QRect(rect.left(), rect.top(), r * 2, r * 2), QRegion.RegionType.Ellipse)
-        arc_bottom_left = QRegion(QRect(rect.left(), rect.bottom() - r * 2 + 1, r * 2, r * 2), QRegion.RegionType.Ellipse)
-
-        # Add the circular arcs back to the region
-        region += arc_top_left
-        region += arc_bottom_left
-
-        # Set the region as the clip region for the painter
-        painter.setClipRegion(region)
-
-        # Draw the image with the new region (rounded left corners)
+        # Draw the image
         painter.drawPixmap(0, 0, scaled_pixmap)
+
+        # Now draw the border on top of the image
+        border_thickness = 5  # Set the thickness of the border
+        border_color = QColor(self.border_color)  # Set the border color (red as an example)
+
+        # Create a QPen for the border with specified thickness and color
+        pen = QPen(border_color)
+        pen.setWidth(border_thickness)  # Set the width of the border
+        painter.setPen(pen)  # Apply the pen to the painter
+        painter.setBrush(Qt.GlobalColor.transparent)  # No fill for the border
+
+        # Draw the rounded rectangle border (without clipping)
+        painter.drawRoundedRect(rect, r, r)
+
+        # End the painter to finalize drawing
         painter.end()
 
-        # Set the pixmap with the final result
+        # Set the pixmap with the final result (image + border)
         self.setPixmap(rounded_pixmap)
 
         super().resizeEvent(event)
+        self.setFixedWidth(rounded_pixmap.width())
 
 
 class ScheduleCell(QLabel):
