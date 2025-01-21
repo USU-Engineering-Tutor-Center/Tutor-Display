@@ -1,9 +1,11 @@
+import json
+
 from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.files.file import File
 import io
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class ExcelManager:
     def __init__(self):
@@ -25,10 +27,28 @@ class ExcelManager:
         ctx_auth = AuthenticationContext(url)
         if ctx_auth.acquire_token_for_user(username, password):
             ctx = ClientContext(url, ctx_auth)
+
+            file = ctx.web.get_file_by_server_relative_url(relative_url)
+            ctx.load(file)
+            ctx.execute_query()
+            last_modified = file.properties["TimeLastModified"]
+
+            with open("data.json", "r") as file:
+                self.tutors = json.load(file)
+
+            last_read = datetime.strptime(self.tutors['last_fetch'], "%Y-%m-%d %H:%M:%S.%f")
+
+            if last_read > last_modified - timedelta(hours=7):
+                print("up to date")
+                print(f"last read: {last_read}")
+                print(f"last edited: {last_modified - timedelta(hours=7)}")
+                return
+            else:
+                print("updating")
+
             web = ctx.web
             ctx.load(web)
             ctx.execute_query()
-
             response = File.open_binary(ctx, relative_url)
 
             # save data to BytesIO stream
@@ -62,8 +82,9 @@ class ExcelManager:
                 if str(row[9]) != "nan":
                     self.tutors[row[0].lower()]['profile_image'] = row[9]
 
-            print(self.tutors)
-
+            with open('data.json', 'w') as file:
+                self.tutors['last_fetch'] = str(datetime.now())
+                json.dump(self.tutors, file, indent=4)
         else:
             return False
 
