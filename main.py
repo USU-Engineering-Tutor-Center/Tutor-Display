@@ -190,32 +190,42 @@ class TutorCard(QFrame):
         main_layout.setContentsMargins(self.spacing, self.spacing, self.spacing, self.spacing)
         self.setLayout(main_layout)
 
-        # profile_pic = QLabel()
-        # profile_pixmap = QPixmap(profile_image_path)
-        # profile_pixmap_scaled = profile_pixmap.scaled(profile_pic.size(), Qt.AspectRatioMode.KeepAspectRatio)
-        # profile_pic.setPixmap(profile_pixmap)
-        # profile_pic.setScaledContents(True)
-        # profile_pic.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
-        # profile_pic.setStyleSheet(f"border-radius: {40}")
-
         profile_pic = RoundedImageLabel(profile_image_path, "#d9d9d9",20)
         profile_pic.setStyleSheet("background-color: #efefef")
         main_layout.addWidget(profile_pic)
 
+        details_widget = QWidget()
+        details_layout = QVBoxLayout()
+        details_widget.setLayout(details_layout)
+        details_widget.setStyleSheet("background-color: transparent")
+        main_layout.addWidget(details_widget)
+
         #get the border color from the tutors major
         match major:
-            case "Biological Engineering":
+            case "Biological Engineer":
                 color = 'blue'
-            case "Civil Engineering":
+            case "Civil Engineer":
                 color = 'green'
-            case "Electrical Engineering":
+            case "Electrical Engineer":
                 color = 'yellow'
-            case "Computer Engineering":
+            case "Computer Engineer":
                 color = 'orange'
-            case "Mechanical Engineering":
+            case "Mechanical Engineer":
                 color = 'red'
             case _:
                 color = 'black'
+
+        name_widget = QLabel(tutor_name)
+        name_widget.setStyleSheet(f"border: 4px solid; border-color: transparent transparent {color} transparent; color: black; border-radius: 0")
+        details_layout.addWidget(name_widget)
+
+        title_widget = QLabel(f"{major} ({progress})")
+        title_widget.setStyleSheet("color: black")
+        details_layout.addWidget(title_widget)
+
+        tutor_schedule_widget = QLabel(schedule)
+        tutor_schedule_widget.setStyleSheet("color: black")
+        details_layout.addWidget(tutor_schedule_widget)
 
         #format the overall card
         self.setStyleSheet(f"TutorCard {{background-color: #efefef; border: 2px solid #d9d9d9}}")
