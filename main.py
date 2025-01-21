@@ -5,8 +5,17 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePol
     QHBoxLayout
 from PyQt6.QtCore import Qt, QSize, QRect, QRectF
 import sys
-
 from excel import ExcelManager
+
+MAE_RED = '#de3126'
+CEE_GREEN = '#13bd13'
+BENG_BLUE = '#4c4ce6'
+ECE_YELLOW = '#ffdd00'
+CMPE_ORAGNE = "orange"
+TITLE_TEAL = "#00706d"
+BACK_BLUE = "#cce9e8"
+BACK_GREY = "#efefef"
+BORDER_GREY = "#d9d9d9"
 
 class MainWindow(QMainWindow):
     """
@@ -45,7 +54,7 @@ class MainWindow(QMainWindow):
         #set up the main screen
         self.setWindowTitle("Tutor Center")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.setStyleSheet("background-color: #cce9e8")
+        self.setStyleSheet(f"background-color: {BACK_BLUE}")
 
         #set up the central widget
         central_widget = QWidget()
@@ -61,7 +70,8 @@ class MainWindow(QMainWindow):
         #set up the title
         title = QLabel("Welcome to The Engineering Tutor Center")
         title.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width()*0.06)))
-        title.setStyleSheet("background-color: #00706d")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet(f"background-color: {TITLE_TEAL}")
         top_layout.addWidget(title)
 
         #set up the base widget
@@ -76,7 +86,7 @@ class MainWindow(QMainWindow):
 
         tutor_list_widget = QWidget()
         tutor_list_widget.setFixedSize(QSize(int(self.screen_size.width()*0.61),base_widget.size().height()-2*self.spacing))
-        tutor_list_widget.setStyleSheet(f"background-color: #ffffff; border-radius: {self.corner_radius}")
+        tutor_list_widget.setStyleSheet(f"background-color: white; border-radius: {self.corner_radius}")
         base_layout.addWidget(tutor_list_widget)
 
         right_section_widget = QWidget()
@@ -88,13 +98,18 @@ class MainWindow(QMainWindow):
         right_section_layout.setContentsMargins(0, 0, 0, 0)
 
         sign_in_widget = QLabel("Please Sign In!")
+        sign_in_widget.setStyleSheet("color: black")
+        sign_in_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         description_widget = QLabel("Tutors are wearing colored lanyards and name tags")
+        description_widget.setStyleSheet("color: black")
+        description_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         right_section_layout.addWidget(sign_in_widget)
         right_section_layout.addWidget(description_widget)
 
         schedule_title_widget = QLabel("Today's Schedule")
         schedule_title_widget.setFixedHeight(int(self.screen_size.width() * 0.039))
-        schedule_title_widget.setStyleSheet(f"background-color: #00706d; border-top-left-radius: {self.corner_radius}; border-top-right-radius: {self.corner_radius}")
+        schedule_title_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        schedule_title_widget.setStyleSheet(f"background-color: {TITLE_TEAL}; border-top-left-radius: {self.corner_radius}; border-top-right-radius: {self.corner_radius}")
         right_section_layout.addWidget(schedule_title_widget)
 
         schedule_widget = QWidget()
@@ -149,7 +164,7 @@ class MainWindow(QMainWindow):
 
         for i in range(5):
             for j in range(2):
-                tutor_list_layout.addWidget(TutorCard("Kyler", "Images/fredericks-kyler-400x600.jpg", "Computer Engineer", "Senior", "Here until 7:00"), i + 1, j + 1)
+                tutor_list_layout.addWidget(TutorCard("Kyler", "Images/default.png", "Computer Engineer", "Senior", "Here until 7:00"), i + 1, j + 1)
 
         #show the screen
         self.showFullScreen()
@@ -186,11 +201,11 @@ class TutorCard(QFrame):
         self.spacing = 20
 
         main_layout = QHBoxLayout()
-        main_layout.setContentsMargins(self.spacing, self.spacing, self.spacing, self.spacing)
+        main_layout.setContentsMargins(self.spacing, self.spacing, 0, self.spacing)
         self.setLayout(main_layout)
 
-        profile_pic = RoundedImageLabel(profile_image_path, "#d9d9d9",20)
-        profile_pic.setStyleSheet("background-color: #efefef")
+        profile_pic = RoundedImageLabel(profile_image_path, BORDER_GREY,20)
+        profile_pic.setStyleSheet(f"background-color: {BACK_GREY}")
         main_layout.addWidget(profile_pic)
 
         details_widget = QWidget()
@@ -202,21 +217,26 @@ class TutorCard(QFrame):
         #get the border color from the tutors major
         match major:
             case "Biological Engineer":
-                color = 'blue'
+                color = BENG_BLUE
             case "Civil Engineer":
-                color = 'green'
+                color = CEE_GREEN
             case "Electrical Engineer":
-                color = 'yellow'
+                color = ECE_YELLOW
             case "Computer Engineer":
-                color = 'orange'
+                color = CMPE_ORAGNE
             case "Mechanical Engineer":
-                color = 'red'
+                color = MAE_RED
             case _:
                 color = 'black'
 
         name_widget = QLabel(tutor_name)
-        name_widget.setStyleSheet(f"border: 4px solid; border-color: transparent transparent {color} transparent; color: black; border-radius: 0")
+        name_widget.setStyleSheet("color: black")
         details_layout.addWidget(name_widget)
+
+        line_widget = QWidget()
+        line_widget.setFixedHeight(4)
+        line_widget.setStyleSheet(f"border: 4px solid; border-color: transparent transparent {color} transparent; border-radius: 0")
+        details_layout.addWidget(line_widget)
 
         title_widget = QLabel(f"{major} ({progress})")
         title_widget.setStyleSheet("color: black")
@@ -227,7 +247,7 @@ class TutorCard(QFrame):
         details_layout.addWidget(tutor_schedule_widget)
 
         #format the overall card
-        self.setStyleSheet(f"TutorCard {{background-color: #efefef; border: 2px solid #d9d9d9}}")
+        self.setStyleSheet(f"TutorCard {{background-color: {BACK_GREY}; border: 2px solid {BORDER_GREY}}}")
 
 class RoundedImageLabel(QLabel):
     """
@@ -295,22 +315,24 @@ class ScheduleCell(QLabel):
     def __init__(self, major, row, col):
         super().__init__()
 
+        border_color = 'black'
+
         match major:
             case "MA":
-                color = 'red'
+                color = MAE_RED
             case "CE":
-                color = 'green'
+                color = CEE_GREEN
             case "B":
-                color = 'blue'
+                color = BENG_BLUE
             case "EL":
-                color = 'yellow'
+                color = ECE_YELLOW
             case "CP":
-                color = 'orange'
+                color = CMPE_ORAGNE
             case _:
                 color = 'white'
 
         top_border = 'transparent'
-        bottom_border = 'black'
+        bottom_border = border_color
         left_border = 'transparent'
         right_border = '#757575'
 
@@ -321,10 +343,10 @@ class ScheduleCell(QLabel):
         right_border_style = 'solid'
 
         if row == 0:
-            top_border = 'black'
+            top_border = border_color
 
         if row == 4:
-            bottom_border = 'black'
+            bottom_border = border_color
             bottom_border_width = '3px'
 
         if col % 2 == 0:
@@ -332,11 +354,11 @@ class ScheduleCell(QLabel):
             right_border_style = 'dashed'
 
         if col == 0:
-            left_border = 'black'
+            left_border = border_color
             left_border_width = '3px'
 
         if col == 15:
-            right_border = "black"
+            right_border = border_color
             right_border_width = '3px'
 
         self.setStyleSheet(f"background-color: {color}; border-width: 4px {right_border_width} {bottom_border_width} {left_border_width}; border-style: solid {right_border_style} solid solid; border-color: {top_border} {right_border} {bottom_border} {left_border}")
