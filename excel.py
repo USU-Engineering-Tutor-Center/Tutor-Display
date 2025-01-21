@@ -33,8 +33,16 @@ class ExcelManager:
             ctx.execute_query()
             last_modified = file.properties["TimeLastModified"]
 
-            with open("data.json", "r") as file:
+            with open("tutor_data.json", "r") as file:
                 self.tutors = json.load(file)
+
+            with open("daily_schedules.json") as file:
+                temp_list = json.load(file)
+                self.monday_schedule = temp_list[0]
+                self.tuesday_schedule = temp_list[1]
+                self.wednesday_schedule = temp_list[2]
+                self.thursday_schedule = temp_list[3]
+                self.friday_schedule = temp_list[4]
 
             last_read = datetime.strptime(self.tutors['last_fetch'], "%Y-%m-%d %H:%M:%S.%f")
 
@@ -70,7 +78,7 @@ class ExcelManager:
 
                 if row[0].lower() not in self.tutors:
                     temp_dict = {'Monday': [], 'Tuesday': [], 'Wednesday': [], 'Thursday': [], 'Friday': []}
-                    self.tutors[row[0].lower()] = {'schedule': temp_dict, "major": "", 'profile_image': 'default', 'progress': "", "name": row[0]}
+                    self.tutors[row[0].lower()] = {'schedule': temp_dict, "major": "", 'profile_image': 'default.png', 'progress': "", "name": row[0]}
 
                 self.tutors[row[0].lower()]["schedule"][row[1]] = row[3:]
                 self.tutors[row[0].lower()]["major"] = row[2]
@@ -82,9 +90,13 @@ class ExcelManager:
                 if str(row[9]) != "nan":
                     self.tutors[row[0].lower()]['profile_image'] = row[9]
 
-            with open('data.json', 'w') as file:
+            with open('tutor_data.json', 'w') as file:
                 self.tutors['last_fetch'] = str(datetime.now())
                 json.dump(self.tutors, file, indent=4)
+
+            with open("daily_schedules.json", 'w') as file:
+                temp_list = [self.monday_schedule, self.tuesday_schedule, self.wednesday_schedule, self.thursday_schedule, self.friday_schedule]
+                json.dump(temp_list, file, indent=4)
         else:
             return False
 

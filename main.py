@@ -14,24 +14,24 @@ class MainWindow(QMainWindow):
 
     Methods:
         __init__(self)
-            formats the screen, parses the data.json file, and adds all the tutor widgets.
+            formats the screen, parses the tutor_data.json file, and adds all the tutor widgets.
 
         keyPressEvent(self, event)
             is responsible for closing the program when the esc key is pressed
     """
     def __init__(self):
         """
-        formats the screen, parses the data.json file, and adds all the tutor widgets
+        formats the screen, parses the tutor_data.json file, and adds all the tutor widgets
         """
 
         super().__init__()
 
         #parse the json file
-        with open('data.json', 'r') as file:
-            #load the file
-            tutor_data_array = json.load(file)
-
-            tutor_data_array = tutor_data_array[:-8]
+        # with open('tutor_data.json', 'r') as file:
+        #     #load the file
+        #     tutor_data_array = json.load(file)
+        #
+        #     tutor_data_array = tutor_data_array[:-8]
 
         em = ExcelManager()
         schedule = em.get_today_schedule()
@@ -112,7 +112,6 @@ class MainWindow(QMainWindow):
                 schedule_layout.addWidget(ScheduleCell(schedule[row][col], row, col), row + 3, col + 3)
 
         cell_width = int((self.screen_size.width() - tutor_list_widget.width() - 3 * self.spacing)/19)
-        print(cell_width)
 
         spacer = QLabel()
         spacer.setFixedSize(QSize(cell_width, self.spacing))
