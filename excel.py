@@ -13,6 +13,8 @@ class ExcelManager:
         self.tuesday_schedule = None
         self.monday_schedule = None
 
+        self.tutors = dict(dict())
+
     def fetch_schedule(self):
         url = os.environ["TUTOR_CENTER_PATH"]
         username = os.environ["TUTOR_CENTER_EMAIL"]
@@ -40,6 +42,28 @@ class ExcelManager:
             self.wednesday_schedule =   pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=21, nrows=6).values.tolist()
             self.thursday_schedule =    pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=30, nrows=6).values.tolist()
             self.friday_schedule =      pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=39, nrows=6).values.tolist()
+
+            temp_tutor_schedule =       pd.read_excel(bytes_file_obj, sheet_name='Schedule', usecols='A:S', skiprows=10, nrows=200).values.tolist()
+            for row in temp_tutor_schedule:
+                if str(row[0]) == "nan":
+                    continue
+
+                if row[0].lower() not in self.tutors:
+                    temp_dict = {'Monday': [], 'Tuesday': [], 'Wednesday': [], 'Thursday': [], 'Friday': []}
+                    self.tutors[row[0].lower()] = {'schedule': temp_dict, "major": "", 'profile_image': 'default', 'progress': "", "name": row[0]}
+
+                self.tutors[row[0].lower()]["schedule"][row[1]] = row[3:]
+                self.tutors[row[0].lower()]["major"] = row[2]
+
+            tutor_info =                pd.read_excel(bytes_file_obj, sheet_name='Tutor Info', usecols='A:J', nrows=30).values.tolist()
+            for row in tutor_info:
+                self.tutors[row[0].lower()]['progress'] = row[3]
+
+                if str(row[9]) != "nan":
+                    self.tutors[row[0].lower()]['profile_image'] = row[9]
+
+            print(self.tutors)
+
         else:
             return False
 
@@ -65,4 +89,4 @@ class ExcelManager:
 
 if __name__ == "__main__":
     em = ExcelManager()
-    print(em.get_today_schedule())
+    em.fetch_schedule()
