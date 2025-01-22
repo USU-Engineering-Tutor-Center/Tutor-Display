@@ -1,5 +1,8 @@
 import json
+import math
 
+from dateutil.rrule import weekday
+from numpy.ma.core import floor
 from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.files.file import File
@@ -120,6 +123,35 @@ class ExcelManager:
         today_schedule.pop(2)
         return today_schedule
 
+    def get_on_shift(self):
+        on_shift = []
+        now = datetime.now()
+        day_of_week = now.strftime('%A')
+
+        now_index = int((now.timetuple().tm_hour + (math.floor(now.timetuple().tm_min / 30) * 0.5) - 9) * 2)
+
+        for tutor in self.tutors:
+            tutor = self.tutors[tutor]
+
+            if "schedule" not in tutor:
+                continue
+
+            today_schedule = tutor["schedule"][day_of_week]
+
+            if str(today_schedule[now_index]).lower() in {"cp", "m", "ce", "el", "B"}:
+                for j in range(now_index, len(today_schedule) + 1):
+                    if today_schedule[j].lower() not in {"cp", "m", "ce", "el", "B"}:
+                        end_schedule = j / 2 + 9
+                        tutor["here_until"] = f"{int(floor(end_schedule - 1) % 12 + 1)}:{int((end_schedule - floor(end_schedule)) * 60):02d}"
+                        break
+
+                on_shift.append(tutor)
+
+        return on_shift
+
 if __name__ == "__main__":
     em = ExcelManager()
     em.fetch_schedule()
+
+    for i in em.get_on_shift():
+        print(i["here_until"])
