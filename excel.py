@@ -127,8 +127,7 @@ class ExcelManager:
         on_shift = []
         now = datetime.now()
         day_of_week = now.strftime('%A')
-
-        now_index = int((now.timetuple().tm_hour + (math.floor(now.timetuple().tm_min / 30) * 0.5) - 9) * 2)
+        now_index = self.get_now_index()
 
         for tutor in self.tutors:
             tutor = self.tutors[tutor]
@@ -138,16 +137,24 @@ class ExcelManager:
 
             today_schedule = tutor["schedule"][day_of_week]
 
-            if str(today_schedule[now_index]).lower() in {"cp", "m", "ce", "el", "B"}:
-                for j in range(now_index, len(today_schedule) + 1):
-                    if today_schedule[j].lower() not in {"cp", "m", "ce", "el", "B"}:
+            if str(today_schedule[now_index]).lower() in {"cp", "m", "ce", "el", "b"}:
+                for j in range(now_index, len(today_schedule)):
+                    if today_schedule[j].lower() not in {"cp", "m", "ce", "el", "b"}:
                         end_schedule = j / 2 + 9
                         tutor["here_until"] = f"{int(floor(end_schedule - 1) % 12 + 1)}:{int((end_schedule - floor(end_schedule)) * 60):02d}"
                         break
+                else:
+                    end_schedule = (len(today_schedule)) / 2 + 9
+                    tutor[
+                        "here_until"] = f"{int(floor(end_schedule - 1) % 12 + 1)}:{int((end_schedule - floor(end_schedule)) * 60):02d}"
 
                 on_shift.append(tutor)
 
         return on_shift
+
+    def get_now_index(self):
+        now = datetime.now()
+        return int((now.timetuple().tm_hour + (math.floor(now.timetuple().tm_min / 30) * 0.5) - 9) * 2)
 
 if __name__ == "__main__":
     em = ExcelManager()
