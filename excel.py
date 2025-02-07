@@ -20,7 +20,21 @@ class ExcelManager:
 
         self.tutors = dict(dict())
 
-    def fetch_schedule(self):
+    def fetch_schedule(self, check_for_updates):
+        if not check_for_updates:
+            with open("tutor_data.json", "r") as file:
+                self.tutors = json.load(file)
+
+            with open("daily_schedules.json") as file:
+                temp_list = json.load(file)
+                self.monday_schedule = temp_list[0]
+                self.tuesday_schedule = temp_list[1]
+                self.wednesday_schedule = temp_list[2]
+                self.thursday_schedule = temp_list[3]
+                self.friday_schedule = temp_list[4]
+
+            return
+
         url = os.environ["TUTOR_CENTER_PATH"]
         username = os.environ["TUTOR_CENTER_EMAIL"]
         password = os.environ["TUTOR_CENTER_PASSWORD"]
@@ -103,8 +117,8 @@ class ExcelManager:
         else:
             return False
 
-    def get_today_schedule(self):
-        self.fetch_schedule()
+    def get_today_schedule(self, check_for_updates=False):
+        self.fetch_schedule(check_for_updates)
 
         today_schedule = None
 
@@ -120,6 +134,7 @@ class ExcelManager:
             case 4:
                 today_schedule = self.friday_schedule
 
+        #remove extra data
         today_schedule.pop(2)
         return today_schedule
 
