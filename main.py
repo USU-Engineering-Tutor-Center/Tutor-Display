@@ -1,21 +1,31 @@
-import math
-import json
-from PyQt6.QtGui import QPixmap, QGuiApplication, QImage, QPainter, QPainterPath, QRegion, QColor, QPen
+from PyQt6.QtGui import QPixmap, QGuiApplication, QPainter, QPainterPath, QColor, QPen
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame, \
     QHBoxLayout
-from PyQt6.QtCore import Qt, QSize, QRect, QRectF
+from PyQt6.QtCore import Qt, QSize, QRectF
 import sys
-from excel import ExcelManager
 
-MAE_RED = '#de3126'
-CEE_GREEN = '#13bd13'
-BENG_BLUE = '#4c4ce6'
-ECE_YELLOW = '#ffdd00'
-CMPE_ORAGNE = "orange"
+from soupsieve import match
+from numpy.ma.core import floor
+from excel import ExcelManager
+import sys
+from PyQt6.QtGui import QFont, QFontDatabase
+
+MAE_RED = '#f23e2c'
+CEE_GREEN = '#2da12f'
+BENG_BLUE = '#296de3'
+ECE_YELLOW = '#edb50e'
+CMPE_ORAGNE = "#ed8218"
 TITLE_TEAL = "#00706d"
 BACK_BLUE = "#cce9e8"
 BACK_GREY = "#efefef"
 BORDER_GREY = "#d9d9d9"
+MAE_RED_DARK = '#b02d20'
+CEE_GREEN_DARK = '#185919'
+BENG_BLUE_DARK = '#224a8f'
+ECE_YELLOW_DARK = '#a67f0d'
+CMPE_ORAGNE_DARK = "#b56312"
+
+MAJOR_ABBREVIATIONS = {"MAE":"Mechanical Engineer", "ECE":"Electrical Engineer", "CMPE":"Computer Engineer", "BENG":"Biological Engineer", "CEE":"Civil Engineer"}
 
 class MainWindow(QMainWindow):
     """
@@ -45,11 +55,26 @@ class MainWindow(QMainWindow):
         em = ExcelManager()
         schedule = em.get_today_schedule()
 
-        majors = ["MAE", "CEE", "BENG", "ECE", "CMPE"]
+        #put them in rainbow order
+        schedule[1], schedule[2], schedule[3], schedule[4] = schedule[4], schedule[3], schedule[1], schedule[2]
+
+        bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
+        if bold_font_id < 0:
+            print("Error loading font")
+
+        bold_families = QFontDatabase.applicationFontFamilies(bold_font_id)
+
+        font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSR.TTF")
+        if font_id < 0:
+            print("Error loading font")
+
+        families = QFontDatabase.applicationFontFamilies(font_id)
+
+        majors = ["MAE", "CMPE", "ECE", "CEE", "BENG"]
 
         self.screen_size = QGuiApplication.primaryScreen().size()
         self.spacing = 20
-        self.corner_radius = 40
+        self.corner_radius = 30
 
         #set up the main screen
         self.setWindowTitle("Tutor Center")
@@ -71,7 +96,8 @@ class MainWindow(QMainWindow):
         title = QLabel("Welcome to The Engineering Tutor Center")
         title.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width()*0.06)))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet(f"background-color: {TITLE_TEAL}")
+        title.setStyleSheet(f"background-color: {TITLE_TEAL}; font-weight: 700")
+        title.setFont(QFont(bold_families[0], 60))
         top_layout.addWidget(title)
 
         #set up the base widget
@@ -100,16 +126,20 @@ class MainWindow(QMainWindow):
         sign_in_widget = QLabel("Please Sign In!")
         sign_in_widget.setStyleSheet("color: black")
         sign_in_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        description_widget = QLabel("Tutors are wearing colored lanyards and name tags")
+        sign_in_widget.setFont(QFont(families[0], 50))
+        sign_in_widget.setFixedHeight(80)
+        description_widget = QLabel("Tutors are wearing colored\nlanyards and name tags")
         description_widget.setStyleSheet("color: black")
         description_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        description_widget.setFont(QFont(families[0], 30))
         right_section_layout.addWidget(sign_in_widget)
         right_section_layout.addWidget(description_widget)
 
         schedule_title_widget = QLabel("Today's Schedule")
         schedule_title_widget.setFixedHeight(int(self.screen_size.width() * 0.039))
         schedule_title_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        schedule_title_widget.setStyleSheet(f"background-color: {TITLE_TEAL}; border-top-left-radius: {self.corner_radius}; border-top-right-radius: {self.corner_radius}")
+        schedule_title_widget.setStyleSheet(f"background-color: {TITLE_TEAL}; border-top-left-radius: {self.corner_radius}; border-top-right-radius: {self.corner_radius}; font-weight: 700")
+        schedule_title_widget.setFont(QFont(families[0], 35))
         right_section_layout.addWidget(schedule_title_widget)
 
         schedule_widget = QWidget()
@@ -122,9 +152,11 @@ class MainWindow(QMainWindow):
         schedule_layout.setSpacing(0)
         schedule_layout.setContentsMargins(0, 0, 0, 0)
 
+        now_index = em.get_now_index()
+
         for row in range(5):
             for col in range(16):
-                schedule_layout.addWidget(ScheduleCell(schedule[row][col], row, col), row + 3, col + 3)
+                schedule_layout.addWidget(ScheduleCell(schedule[row][col], row, col, col == now_index), row + 3, col + 3)
 
         cell_width = int((self.screen_size.width() - tutor_list_widget.width() - 3 * self.spacing)/19)
 
@@ -148,6 +180,7 @@ class MainWindow(QMainWindow):
             temp = QLabel(major)
             temp.setStyleSheet("color: black")
             temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            temp.setFont(QFont(families[0], 18))
             schedule_layout.addWidget(temp, i + 3, 1, 1, 2)
 
         for i in range(9):
@@ -155,6 +188,7 @@ class MainWindow(QMainWindow):
             temp.setStyleSheet("color: black")
             temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
             temp.setFixedHeight(30)
+            temp.setFont(QFont(families[0], 15))
             schedule_layout.addWidget(temp, 2, i*2 + 2, 1, 2)
 
         tutor_list_layout = QGridLayout()
@@ -162,9 +196,56 @@ class MainWindow(QMainWindow):
         tutor_list_layout.setContentsMargins(self.spacing, self.spacing, self.spacing, self.spacing)
         tutor_list_widget.setLayout(tutor_list_layout)
 
+        # for i, tutor in enumerate(em.get_on_shift()):
+        #     tutor_list_layout.addWidget(TutorCard(tutor["name"], f"Images/{tutor["profile_image"]}", tutor["major"], tutor["progress"], f"Here until {tutor["here_until"]}"), math.floor(i/2)+1, i % 2 + 1)
+
+        on_shift = em.get_on_shift()
+        majors_not_on_shift = ["MAE", "ECE", "CMPE", "BENG", "CEE"]
+
         for i in range(5):
             for j in range(2):
-                tutor_list_layout.addWidget(TutorCard("Kyler", "Images/default.png", "Computer Engineer", "Senior", "Here until 7:00"), i + 1, j + 1)
+                display_order = 2 * i + j
+
+                if display_order < len(on_shift):
+                    tutor = on_shift[display_order]
+
+                    tutor_list_layout.addWidget(
+                        TutorCard(tutor["name"], f"Images/{tutor["profile_image"]}", MAJOR_ABBREVIATIONS[tutor["major"]], tutor["progress"],
+                                  f"Here until {tutor["here_until"]}"), i, j)
+
+                    if tutor["major"] in majors_not_on_shift:
+                        majors_not_on_shift.remove(tutor["major"])
+                else:
+                    spots_left = 10 - (i*2 + j)
+                    if spots_left <= len(majors_not_on_shift):
+                        current_major = MAJOR_ABBREVIATIONS[majors_not_on_shift[spots_left - 1]]
+                        match current_major:
+                            case "Biological Engineer":
+                                major_schedule = schedule[4]
+                            case "Civil Engineer":
+                                major_schedule = schedule[3]
+                            case "Electrical Engineer":
+                                major_schedule = schedule[2]
+                            case "Computer Engineer":
+                                major_schedule = schedule[1]
+                            case "Mechanical Engineer":
+                                major_schedule = schedule[0]
+                            case _:
+                                major_schedule = []
+
+                        next_in = ""
+
+                        for block in range(now_index + 1, len(major_schedule)):
+                            if major_schedule[block].lower() in {"ma", "ce", "b", "el", "cp"}:
+                                end_schedule = block/2 + 9
+                                next_in = f"at {int(floor(end_schedule - 1) % 12 + 1)}:{int((end_schedule - floor(end_schedule)) * 60):02d}"
+                                break
+                        else:
+                            next_in = "Tomorrow"
+
+                        tutor_list_layout.addWidget(WillReturn(current_major, next_in))
+                    else:
+                        tutor_list_layout.addWidget(QWidget(), i, j)
 
         #show the screen
         self.showFullScreen()
@@ -187,7 +268,7 @@ class TutorCard(QFrame):
         __init__(self, tutor_name, profile_image_path, major, progress, schedule)
             defines the layout of the tutor card based on the supplied arguments
     """
-    def __init__(self, tutor_name, profile_image_path, major, progress, schedule):
+    def __init__(self, tutor_name, profile_image_path, major, progress, schedule, fake=False):
         """
         defines the layout of the tutor card based on the supplied arguments
         :param tutor_name: the name of the tutor
@@ -198,7 +279,22 @@ class TutorCard(QFrame):
         """
         super().__init__()
 
-        self.spacing = 20
+        if fake:
+            return
+
+        bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
+        if bold_font_id < 0:
+            print("Error loading font")
+
+        bold_families = QFontDatabase.applicationFontFamilies(bold_font_id)
+
+        font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSR.TTF")
+        if font_id < 0:
+            print("Error loading font")
+
+        families = QFontDatabase.applicationFontFamilies(font_id)
+
+        self.spacing = 10
 
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(self.spacing, self.spacing, 0, self.spacing)
@@ -231,19 +327,22 @@ class TutorCard(QFrame):
 
         name_widget = QLabel(tutor_name)
         name_widget.setStyleSheet("color: black")
+        name_widget.setFont(QFont(families[0], 25))
         details_layout.addWidget(name_widget)
 
         line_widget = QWidget()
-        line_widget.setFixedHeight(4)
-        line_widget.setStyleSheet(f"border: 4px solid; border-color: transparent transparent {color} transparent; border-radius: 0")
+        line_widget.setFixedHeight(8)
+        line_widget.setStyleSheet(f"border: 8px solid; border-color: transparent transparent {color} transparent; border-radius: 0")
         details_layout.addWidget(line_widget)
 
         title_widget = QLabel(f"{major} ({progress})")
         title_widget.setStyleSheet("color: black")
+        title_widget.setFont(QFont(families[0], 15))
         details_layout.addWidget(title_widget)
 
         tutor_schedule_widget = QLabel(schedule)
         tutor_schedule_widget.setStyleSheet("color: black")
+        tutor_schedule_widget.setFont(QFont(families[0], 15))
         details_layout.addWidget(tutor_schedule_widget)
 
         #format the overall card
@@ -311,30 +410,102 @@ class RoundedImageLabel(QLabel):
         self.setFixedWidth(rounded_pixmap.width())
 
 
+class WillReturn(QLabel):
+    def __init__(self, major, return_time):
+        super().__init__()
+
+        bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
+        if bold_font_id < 0:
+            print("Error loading font")
+
+        bold_families = QFontDatabase.applicationFontFamilies(bold_font_id)
+
+        font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSR.TTF")
+        if font_id < 0:
+            print("Error loading font")
+
+        families = QFontDatabase.applicationFontFamilies(font_id)
+
+        self.spacing = 10
+        offset = 30
+
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(self.spacing, self.spacing, self.spacing, 0)
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setLayout(main_layout)
+
+        spacer = QLabel()
+        spacer.setStyleSheet("background: transparent")
+        spacer.setFixedHeight(offset - 15)
+        main_layout.addWidget(spacer)
+
+        main_text = QLabel(f"{major}ing\nWill Return {return_time}")
+        main_text.setStyleSheet("color: black; background-color: transparent")
+        main_text.setFont(QFont(families[0], 25))
+        main_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(main_text)
+
+        match major:
+            case "Biological Engineer":
+                bar_color = BENG_BLUE
+            case "Civil Engineer":
+                bar_color = CEE_GREEN
+            case "Electrical Engineer":
+                bar_color = ECE_YELLOW
+            case "Computer Engineer":
+                bar_color = CMPE_ORAGNE
+            case "Mechanical Engineer":
+                bar_color = MAE_RED
+            case _:
+                bar_color = 'black'
+
+        spacer2 = QLabel()
+        spacer2.setStyleSheet(f"border: 6px solid; border-color: {bar_color} transparent transparent transparent; background: transparent")
+        spacer2.setFixedSize(QSize(int(self.width()*5/8), offset + 15))
+        main_layout.addWidget(spacer2)
+
+        self.setStyleSheet(f"WillReturn {{background-color: {BACK_GREY}; border: 2px solid {BORDER_GREY}}}")
+
+
 class ScheduleCell(QLabel):
-    def __init__(self, major, row, col):
+    def __init__(self, major, row, col, dark):
         super().__init__()
 
         border_color = 'black'
-
-        match major:
-            case "MA":
-                color = MAE_RED
-            case "CE":
-                color = CEE_GREEN
-            case "B":
-                color = BENG_BLUE
-            case "EL":
-                color = ECE_YELLOW
-            case "CP":
-                color = CMPE_ORAGNE
-            case _:
-                color = 'white'
+        
+        if dark:
+            match major:
+                case "MA":
+                    color = MAE_RED_DARK
+                case "CE":
+                    color = CEE_GREEN_DARK
+                case "B":
+                    color = BENG_BLUE_DARK
+                case "EL":
+                    color = ECE_YELLOW_DARK
+                case "CP":
+                    color = CMPE_ORAGNE_DARK
+                case _:
+                    color = '#9e9e9e'
+        else:
+            match major:
+                case "MA":
+                    color = MAE_RED
+                case "CE":
+                    color = CEE_GREEN
+                case "B":
+                    color = BENG_BLUE
+                case "EL":
+                    color = ECE_YELLOW
+                case "CP":
+                    color = CMPE_ORAGNE
+                case _:
+                    color = 'white'
 
         top_border = 'transparent'
         bottom_border = border_color
         left_border = 'transparent'
-        right_border = '#757575'
+        right_border = '#2e2e2e'#757575'
 
         right_border_width = '2px'
         left_border_width = '2px'
@@ -366,7 +537,6 @@ class ScheduleCell(QLabel):
 
 #run the program
 if __name__ == "__main__":
-    app = QApplication([])
-    window = MainWindow()
-
-    sys.exit(app.exec())
+        app = QApplication([])
+        window = MainWindow()
+        sys.exit(app.exec())
