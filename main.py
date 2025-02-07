@@ -7,6 +7,7 @@ import sys
 from soupsieve import match
 from numpy.ma.core import floor
 from excel import ExcelManager
+from get_pictures import GetPictures
 import sys
 from PyQt6.QtGui import QFont, QFontDatabase
 
@@ -42,21 +43,29 @@ class MainWindow(QMainWindow):
         """
         formats the screen, parses the tutor_data.json file, and adds all the tutor widgets
         """
-
         super().__init__()
 
-        #parse the json file
-        # with open('tutor_data.json', 'r') as file:
-        #     #load the file
-        #     tutor_data_array = json.load(file)
-        #
-        #     tutor_data_array = tutor_data_array[:-8]
+        self.screen_size = QGuiApplication.primaryScreen().size()
+        self.spacing = 20
+        self.corner_radius = 30
 
-        em = ExcelManager()
-        schedule = em.get_today_schedule()
+        #update the pictures
+        gp = GetPictures()
+        gp.get_pictures()
 
-        #put them in rainbow order
-        schedule[1], schedule[2], schedule[3], schedule[4] = schedule[4], schedule[3], schedule[1], schedule[2]
+        #update the schedules
+        self.em = ExcelManager()
+        self.schedule = self.em.get_today_schedule()
+
+        #build the layout
+        self.build_layout(True)
+
+        #show the screen
+        self.showFullScreen()
+
+    def build_layout(self, check_for_updates):
+        # put them in rainbow order
+        self.schedule[1], self.schedule[2], self.schedule[3], self.schedule[4] = self.schedule[4], self.schedule[3], self.schedule[1], self.schedule[2]
 
         bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
         if bold_font_id < 0:
@@ -72,37 +81,34 @@ class MainWindow(QMainWindow):
 
         majors = ["MAE", "CMPE", "ECE", "CEE", "BENG"]
 
-        self.screen_size = QGuiApplication.primaryScreen().size()
-        self.spacing = 20
-        self.corner_radius = 30
-
-        #set up the main screen
+        # set up the main screen
         self.setWindowTitle("Tutor Center")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setStyleSheet(f"background-color: {BACK_BLUE}")
 
-        #set up the central widget
+        # set up the central widget
         central_widget = QWidget()
         central_widget.setFixedSize(QSize(self.screen_size.width(), self.screen_size.height()))
         self.setCentralWidget(central_widget)
 
-        #set up the top layout
+        # set up the top layout
         top_layout = QVBoxLayout()
         top_layout.setSpacing(0)
         top_layout.setContentsMargins(0, 0, 0, 0)
         central_widget.setLayout(top_layout)
 
-        #set up the title
+        # set up the title
         title = QLabel("Welcome to The Engineering Tutor Center")
-        title.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width()*0.06)))
+        title.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width() * 0.06)))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet(f"background-color: {TITLE_TEAL}; font-weight: 700")
         title.setFont(QFont(bold_families[0], 60))
         top_layout.addWidget(title)
 
-        #set up the base widget
+        # set up the base widget
         base_widget = QWidget()
-        base_widget.setFixedSize(QSize(self.screen_size.width(), self.screen_size.height()-int(self.screen_size.width()*0.06)))
+        base_widget.setFixedSize(
+            QSize(self.screen_size.width(), self.screen_size.height() - int(self.screen_size.width() * 0.06)))
         top_layout.addWidget(base_widget)
 
         base_layout = QHBoxLayout()
@@ -111,7 +117,8 @@ class MainWindow(QMainWindow):
         base_layout.setContentsMargins(self.spacing, self.spacing, self.spacing, self.spacing)
 
         tutor_list_widget = QWidget()
-        tutor_list_widget.setFixedSize(QSize(int(self.screen_size.width()*0.61),base_widget.size().height()-2*self.spacing))
+        tutor_list_widget.setFixedSize(
+            QSize(int(self.screen_size.width() * 0.61), base_widget.size().height() - 2 * self.spacing))
         tutor_list_widget.setStyleSheet(f"background-color: white; border-radius: {self.corner_radius}")
         base_layout.addWidget(tutor_list_widget)
 
@@ -138,13 +145,15 @@ class MainWindow(QMainWindow):
         schedule_title_widget = QLabel("Today's Schedule")
         schedule_title_widget.setFixedHeight(int(self.screen_size.width() * 0.039))
         schedule_title_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        schedule_title_widget.setStyleSheet(f"background-color: {TITLE_TEAL}; border-top-left-radius: {self.corner_radius}; border-top-right-radius: {self.corner_radius}; font-weight: 700")
+        schedule_title_widget.setStyleSheet(
+            f"background-color: {TITLE_TEAL}; border-top-left-radius: {self.corner_radius}; border-top-right-radius: {self.corner_radius}; font-weight: 700")
         schedule_title_widget.setFont(QFont(families[0], 35))
         right_section_layout.addWidget(schedule_title_widget)
 
         schedule_widget = QWidget()
-        schedule_widget.setFixedHeight(int(self.screen_size.width()*0.321))
-        schedule_widget.setStyleSheet(f"background-color: white; border-bottom-right-radius: {self.corner_radius}; border-bottom-left-radius: {self.corner_radius}")
+        schedule_widget.setFixedHeight(int(self.screen_size.width() * 0.321))
+        schedule_widget.setStyleSheet(
+            f"background-color: white; border-bottom-right-radius: {self.corner_radius}; border-bottom-left-radius: {self.corner_radius}")
         right_section_layout.addWidget(schedule_widget)
 
         schedule_layout = QGridLayout()
@@ -152,13 +161,14 @@ class MainWindow(QMainWindow):
         schedule_layout.setSpacing(0)
         schedule_layout.setContentsMargins(0, 0, 0, 0)
 
-        now_index = em.get_now_index()
+        now_index = self.em.get_now_index()
 
         for row in range(5):
             for col in range(16):
-                schedule_layout.addWidget(ScheduleCell(schedule[row][col], row, col, col == now_index), row + 3, col + 3)
+                schedule_layout.addWidget(ScheduleCell(self.schedule[row][col], row, col, col == now_index), row + 3,
+                                          col + 3)
 
-        cell_width = int((self.screen_size.width() - tutor_list_widget.width() - 3 * self.spacing)/19)
+        cell_width = int((self.screen_size.width() - tutor_list_widget.width() - 3 * self.spacing) / 19)
 
         spacer = QLabel()
         spacer.setFixedSize(QSize(cell_width, self.spacing))
@@ -184,12 +194,12 @@ class MainWindow(QMainWindow):
             schedule_layout.addWidget(temp, i + 3, 1, 1, 2)
 
         for i in range(9):
-            temp = QLabel(f"{(i+8)%12 + 1}:00")
+            temp = QLabel(f"{(i + 8) % 12 + 1}:00")
             temp.setStyleSheet("color: black")
             temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
             temp.setFixedHeight(30)
             temp.setFont(QFont(families[0], 15))
-            schedule_layout.addWidget(temp, 2, i*2 + 2, 1, 2)
+            schedule_layout.addWidget(temp, 2, i * 2 + 2, 1, 2)
 
         tutor_list_layout = QGridLayout()
         tutor_list_layout.setSpacing(self.spacing)
@@ -199,7 +209,7 @@ class MainWindow(QMainWindow):
         # for i, tutor in enumerate(em.get_on_shift()):
         #     tutor_list_layout.addWidget(TutorCard(tutor["name"], f"Images/{tutor["profile_image"]}", tutor["major"], tutor["progress"], f"Here until {tutor["here_until"]}"), math.floor(i/2)+1, i % 2 + 1)
 
-        on_shift = em.get_on_shift()
+        on_shift = self.em.get_on_shift()
         majors_not_on_shift = ["MAE", "ECE", "CMPE", "BENG", "CEE"]
 
         for i in range(5):
@@ -210,26 +220,27 @@ class MainWindow(QMainWindow):
                     tutor = on_shift[display_order]
 
                     tutor_list_layout.addWidget(
-                        TutorCard(tutor["name"], f"Images/{tutor["profile_image"]}", MAJOR_ABBREVIATIONS[tutor["major"]], tutor["progress"],
+                        TutorCard(tutor["name"], f"Images/{tutor["profile_image"]}",
+                                  MAJOR_ABBREVIATIONS[tutor["major"]], tutor["progress"],
                                   f"Here until {tutor["here_until"]}"), i, j)
 
                     if tutor["major"] in majors_not_on_shift:
                         majors_not_on_shift.remove(tutor["major"])
                 else:
-                    spots_left = 10 - (i*2 + j)
+                    spots_left = 10 - (i * 2 + j)
                     if spots_left <= len(majors_not_on_shift):
                         current_major = MAJOR_ABBREVIATIONS[majors_not_on_shift[spots_left - 1]]
                         match current_major:
                             case "Biological Engineer":
-                                major_schedule = schedule[4]
+                                major_schedule = self.schedule[4]
                             case "Civil Engineer":
-                                major_schedule = schedule[3]
+                                major_schedule = self.schedule[3]
                             case "Electrical Engineer":
-                                major_schedule = schedule[2]
+                                major_schedule = self.schedule[2]
                             case "Computer Engineer":
-                                major_schedule = schedule[1]
+                                major_schedule = self.schedule[1]
                             case "Mechanical Engineer":
-                                major_schedule = schedule[0]
+                                major_schedule = self.schedule[0]
                             case _:
                                 major_schedule = []
 
@@ -237,7 +248,7 @@ class MainWindow(QMainWindow):
 
                         for block in range(now_index + 1, len(major_schedule)):
                             if major_schedule[block].lower() in {"ma", "ce", "b", "el", "cp"}:
-                                end_schedule = block/2 + 9
+                                end_schedule = block / 2 + 9
                                 next_in = f"at {int(floor(end_schedule - 1) % 12 + 1)}:{int((end_schedule - floor(end_schedule)) * 60):02d}"
                                 break
                         else:
@@ -246,9 +257,6 @@ class MainWindow(QMainWindow):
                         tutor_list_layout.addWidget(WillReturn(current_major, next_in))
                     else:
                         tutor_list_layout.addWidget(QWidget(), i, j)
-
-        #show the screen
-        self.showFullScreen()
 
     def keyPressEvent(self, event):
         """
