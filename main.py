@@ -164,7 +164,7 @@ class MainWindow(QMainWindow):
         sign_in_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sign_in_widget.setFont(QFont(families[0], 50))
         sign_in_widget.setFixedHeight(80)
-        description_widget = QLabel(f"Tutors are wearing colored\nlanyards and name tags \n{QTime.currentTime()}")
+        description_widget = QLabel("Tutors are wearing colored\nlanyards and name tags")
         description_widget.setStyleSheet("color: black")
         description_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         description_widget.setFont(QFont(families[0], 30))
@@ -239,7 +239,26 @@ class MainWindow(QMainWindow):
         #     tutor_list_layout.addWidget(TutorCard(tutor["name"], f"Images/{tutor["profile_image"]}", tutor["major"], tutor["progress"], f"Here until {tutor["here_until"]}"), math.floor(i/2)+1, i % 2 + 1)
 
         on_shift = self.em.get_on_shift()
-        majors_not_on_shift = ["MAE", "ECE", "CMPE", "BENG", "CEE"]
+
+        #print(on_shift)
+
+        major_order = {"MAE": 0, "CMPE": 1, "ECE": 2, "CEE": 3, "BENG": 4}
+        def parse_time(time_str):
+            """Convert hh:mm string to a comparable 24-hour format"""
+            hours, minutes = map(int, time_str.split(":"))
+            if hours < 9:  # Assume PM if hour is less than 9
+                hours += 12
+            return hours * 60 + minutes  # Convert to total minutes for easy sorting
+
+        def sort_key(entry):
+            """Sorting key function that sorts by major and then by converted time"""
+            major_rank = major_order.get(entry["major"], float("inf"))  # Default to last if unknown
+            time_value = parse_time(entry["here_until"])
+            return major_rank, time_value
+
+        on_shift = sorted(on_shift, key=sort_key)
+
+        majors_not_on_shift = ["MAE", "ECE", "CMPE", "CEE", "BENG"]
 
         for i in range(5):
             for j in range(2):
