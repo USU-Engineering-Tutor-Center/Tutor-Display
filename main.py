@@ -1,6 +1,8 @@
+import time
+
 from PyQt6.QtGui import QPixmap, QGuiApplication, QPainter, QPainterPath, QColor, QPen
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame, \
-    QHBoxLayout
+    QHBoxLayout, QStackedWidget
 from PyQt6.QtCore import Qt, QSize, QRectF, QTime, QTimer
 import sys
 
@@ -49,6 +51,20 @@ class MainWindow(QMainWindow):
         self.spacing = 20
         self.corner_radius = 30
 
+        # Stack to manage two widgets
+        self.stacked_widget = QStackedWidget(self)
+        self.setCentralWidget(self.stacked_widget)
+
+        # Create two widgets for swapping
+        self.active_widget = QWidget()
+        self.hidden_widget = QWidget()
+
+        # Add them to the stacked layout
+        self.stacked_widget.addWidget(self.active_widget)
+        self.stacked_widget.addWidget(self.hidden_widget)
+
+        self.stacked_widget.setFixedSize(QSize(self.screen_size.width(), self.screen_size.height()))
+
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
         #update the pictures
@@ -76,13 +92,6 @@ class MainWindow(QMainWindow):
         self.showFullScreen()
 
     def update_ui(self):
-        # Clear the layout
-        # while self.layout().count():
-        #     item = self.layout().takeAt(0)
-        #     widget = item.widget()
-        #     if widget:
-        #         widget.deleteLater()
-
         bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
         if bold_font_id < 0:
             print("Error loading font")
@@ -101,16 +110,21 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Tutor Center")
         self.setStyleSheet(f"background-color: {BACK_BLUE}")
 
-        # set up the central widget
-        central_widget = QWidget()
-        central_widget.setFixedSize(QSize(self.screen_size.width(), self.screen_size.height()))
-        self.setCentralWidget(central_widget)
+        if self.hidden_widget.layout():
+            old_layout = self.hidden_widget.layout()
+            while old_layout.count():
+                item = old_layout.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+            old_layout.deleteLater()
+            self.hidden_widget = QWidget()
+            self.stacked_widget.addWidget(self.hidden_widget)
 
         # set up the top layout
-        top_layout = QVBoxLayout()
+        top_layout = QVBoxLayout(self.hidden_widget)
         top_layout.setSpacing(0)
         top_layout.setContentsMargins(0, 0, 0, 0)
-        central_widget.setLayout(top_layout)
 
         # set up the title
         title = QLabel("Welcome to The Engineering Tutor Center")
@@ -273,6 +287,10 @@ class MainWindow(QMainWindow):
                     else:
                         tutor_list_layout.addWidget(QWidget(), i, j)
 
+        self.stacked_widget.setCurrentWidget(self.hidden_widget)
+
+        self.active_widget, self.hidden_widget = self.hidden_widget, self.active_widget
+
     def schedule_next_update(self):
         """Calculates time until the next half-hour and sets the update timer."""
         now = QTime.currentTime()
@@ -286,8 +304,6 @@ class MainWindow(QMainWindow):
             minutes_until_next = 60 - minutes_past_hour
 
         seconds_until_next = (minutes_until_next * 60) - seconds_past_minute
-
-        seconds_until_next = 10
 
         # Convert to minutes and seconds
         minutes_display = seconds_until_next // 60
