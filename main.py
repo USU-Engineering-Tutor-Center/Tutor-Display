@@ -1,7 +1,7 @@
 from PyQt6.QtGui import QPixmap, QGuiApplication, QPainter, QPainterPath, QColor, QPen
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QGridLayout, QVBoxLayout, QFrame, \
     QHBoxLayout
-from PyQt6.QtCore import Qt, QSize, QRectF
+from PyQt6.QtCore import Qt, QSize, QRectF, QTime, QTimer
 import sys
 
 from soupsieve import match
@@ -49,6 +49,8 @@ class MainWindow(QMainWindow):
         self.spacing = 20
         self.corner_radius = 30
 
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+
         #update the pictures
         gp = GetPictures()
         gp.get_pictures()
@@ -57,15 +59,29 @@ class MainWindow(QMainWindow):
         self.em = ExcelManager()
         self.schedule = self.em.get_today_schedule()
 
+        # put them in rainbow order
+        self.schedule[1], self.schedule[2], self.schedule[3], self.schedule[4] = self.schedule[4], self.schedule[3], \
+        self.schedule[1], self.schedule[2]
+
+        self.timer = QTimer(self)  # Timer must be explicitly created for QMainWindow
+        self.timer.timeout.connect(self.update_ui)
+
         #build the layout
-        self.build_layout(True)
+        self.update_ui()
+
+        #start the scheduled updates
+        self.schedule_next_update()
 
         #show the screen
         self.showFullScreen()
 
-    def build_layout(self, check_for_updates):
-        # put them in rainbow order
-        self.schedule[1], self.schedule[2], self.schedule[3], self.schedule[4] = self.schedule[4], self.schedule[3], self.schedule[1], self.schedule[2]
+    def update_ui(self):
+        # Clear the layout
+        # while self.layout().count():
+        #     item = self.layout().takeAt(0)
+        #     widget = item.widget()
+        #     if widget:
+        #         widget.deleteLater()
 
         bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
         if bold_font_id < 0:
@@ -83,7 +99,6 @@ class MainWindow(QMainWindow):
 
         # set up the main screen
         self.setWindowTitle("Tutor Center")
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setStyleSheet(f"background-color: {BACK_BLUE}")
 
         # set up the central widget
@@ -135,7 +150,7 @@ class MainWindow(QMainWindow):
         sign_in_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sign_in_widget.setFont(QFont(families[0], 50))
         sign_in_widget.setFixedHeight(80)
-        description_widget = QLabel("Tutors are wearing colored\nlanyards and name tags")
+        description_widget = QLabel(f"Tutors are wearing colored\nlanyards and name tags \n{QTime.currentTime()}")
         description_widget.setStyleSheet("color: black")
         description_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         description_widget.setFont(QFont(families[0], 30))
@@ -257,6 +272,37 @@ class MainWindow(QMainWindow):
                         tutor_list_layout.addWidget(WillReturn(current_major, next_in))
                     else:
                         tutor_list_layout.addWidget(QWidget(), i, j)
+
+    def schedule_next_update(self):
+        """Calculates time until the next half-hour and sets the update timer."""
+        now = QTime.currentTime()
+        minutes_past_hour = now.minute()
+        seconds_past_minute = now.second()
+
+        # Find next update time (either :00 or :30)
+        if minutes_past_hour < 30:
+            minutes_until_next = 30 - minutes_past_hour
+        else:
+            minutes_until_next = 60 - minutes_past_hour
+
+        seconds_until_next = (minutes_until_next * 60) - seconds_past_minute
+
+        seconds_until_next = 10
+
+        # Convert to minutes and seconds
+        minutes_display = seconds_until_next // 60
+        seconds_display = seconds_until_next % 60
+
+        print(f"Next update in {minutes_display} minutes and {seconds_display} seconds")
+
+        # Start a one-time timer to trigger the first update
+        QTimer.singleShot(seconds_until_next * 1000, self.update_data)
+
+    def update_data(self):
+        """Updates the UI and switches to a 30-minute repeating update."""
+        self.update_ui()
+        self.schedule_next_update()
+
 
     def keyPressEvent(self, event):
         """
