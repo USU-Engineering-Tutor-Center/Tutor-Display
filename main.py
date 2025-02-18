@@ -7,7 +7,7 @@ import sys
 
 # import custom modules
 from excel import ExcelManager
-from get_pictures import GetPictures
+import get_pictures
 from custom_widgets import *
 
 # define helper variables
@@ -57,8 +57,7 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
         # update the pictures
-        gp = GetPictures()
-        gp.get_pictures()
+        get_pictures.get_pictures()
 
         # update the schedules
         self.em = ExcelManager()
