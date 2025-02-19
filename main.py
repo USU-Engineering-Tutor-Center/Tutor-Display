@@ -68,6 +68,7 @@ class MainWindow(QMainWindow):
 
         # define the timer for auto updating
         self.timer = QTimer(self)
+        # noinspection PyUnresolvedReferences
         self.timer.timeout.connect(self.update_ui)
 
         # build the layout
