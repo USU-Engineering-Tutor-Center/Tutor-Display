@@ -291,7 +291,8 @@ class MainWindow(QMainWindow):
                         TutorCard(
                             tutor["name"], #the name of the tutor
                             f"Images/{tutor["profile_image"]}", # the path to the image
-                            MAJOR_ABBREVIATIONS[tutor["major"]], tutor["progress"], # the name of the major
+                            MAJOR_ABBREVIATIONS[tutor["major"]], # the name of the major
+                            tutor["academic_class"], #softmore, junior, etc
                             f"Here until {tutor["here_until"]}" # when the tutor is leaving
                         ),
                         i,

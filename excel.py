@@ -116,7 +116,7 @@ class ExcelManager:
                     'schedule': empty_schedule_dict,
                     "major": "",
                     'profile_image': 'default.png',
-                    'progress': "",
+                    'academic_class': "",
                     "name": tutor_name
                 }
 
@@ -131,7 +131,7 @@ class ExcelManager:
             tutor_name = row[0]
 
             #add the academic class to the tutor they belong to
-            self.tutors[tutor_name.lower()]['progress'] = row[3]
+            self.tutors[tutor_name.lower()]['academic_class'] = row[3]
 
             #update the profile picture if one is specified
             if str(row[9]) != "nan":

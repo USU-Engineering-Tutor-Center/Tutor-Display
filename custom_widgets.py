@@ -24,17 +24,17 @@ class TutorCard(QFrame):
     defines the layout of a tutor card so that it can easily be copied
 
     Methods:
-        __init__(self, tutor_name, profile_image_path, major, progress, schedule)
+        __init__(self, tutor_name, profile_image_path, major, academic_class, schedule)
             defines the layout of the tutor card based on the supplied arguments
     """
 
-    def __init__(self, tutor_name, profile_image_path, major, progress, leaving_at):
+    def __init__(self, tutor_name, profile_image_path, major, academic_class, leaving_at):
         """
         defines the layout of the tutor card based on the supplied arguments
         :param tutor_name: the name of the tutor
         :param profile_image_path: the path to the tutor
         :param major: the major of the tutor
-        :param progress: the progress (senior, junior, etc.) of the tutor
+        :param academic_class: the academic_class (senior, junior, etc.) of the tutor
         :param leaving_at: what hours the tutor is here for
         """
         super().__init__()
@@ -97,7 +97,7 @@ class TutorCard(QFrame):
         details_layout.addWidget(line_widget)
 
         # define the widget for the major and the year of school they are in
-        title_widget = QLabel(f"{major} ({progress})")
+        title_widget = QLabel(f"{major} ({academic_class})")
         title_widget.setStyleSheet("color: black")
         title_widget.setFont(QFont(families[0], 15))
         details_layout.addWidget(title_widget)
