@@ -1,6 +1,6 @@
 # import modules
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWidget, QLayout
 from PyQt6.QtCore import QTime, QTimer
 from numpy.ma.core import floor
 import sys
@@ -71,6 +71,18 @@ class MainWindow(QMainWindow):
         # noinspection PyUnresolvedReferences
         self.timer.timeout.connect(self.update_ui)
 
+        # define the bold font
+        bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
+        if bold_font_id < 0:
+            print("Error loading font")
+        self.bold_families = QFontDatabase.applicationFontFamilies(bold_font_id)
+
+        # define the normal font
+        font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSR.TTF")
+        if font_id < 0:
+            print("Error loading font")
+        self.families = QFontDatabase.applicationFontFamilies(font_id)
+
         # build the layout
         self.update_ui()
 
@@ -85,18 +97,6 @@ class MainWindow(QMainWindow):
         defines the layout of the display and fills it in with the data fetched from the spreadsheet
         :return:
         """
-
-        # define the bold font
-        bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
-        if bold_font_id < 0:
-            print("Error loading font")
-        bold_families = QFontDatabase.applicationFontFamilies(bold_font_id)
-
-        # define the normal font
-        font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSR.TTF")
-        if font_id < 0:
-            print("Error loading font")
-        families = QFontDatabase.applicationFontFamilies(font_id)
 
         # set up the main screen
         self.setWindowTitle("Tutor Center")
@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
         title.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width() * 0.06)))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet(f"background-color: {TITLE_TEAL}; font-weight: 700")
-        title.setFont(QFont(bold_families[0], 60))
+        title.setFont(QFont(self.bold_families[0], 60))
         top_layout.addWidget(title)
 
         # set up the base widget
@@ -164,12 +164,12 @@ class MainWindow(QMainWindow):
         sign_in_widget = QLabel("Please Sign In!")
         sign_in_widget.setStyleSheet("color: black")
         sign_in_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        sign_in_widget.setFont(QFont(families[0], 50))
+        sign_in_widget.setFont(QFont(self.families[0], 50))
         sign_in_widget.setFixedHeight(80)
         description_widget = QLabel("Tutors are wearing colored\nlanyards and name tags")
         description_widget.setStyleSheet("color: black")
         description_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        description_widget.setFont(QFont(families[0], 30))
+        description_widget.setFont(QFont(self.families[0], 30))
         right_section_layout.addWidget(sign_in_widget)
         right_section_layout.addWidget(description_widget)
 
@@ -183,7 +183,7 @@ class MainWindow(QMainWindow):
             f"border-top-right-radius: {self.corner_radius}; "
             f"font-weight: 700"
         )
-        schedule_title_widget.setFont(QFont(families[0], 35))
+        schedule_title_widget.setFont(QFont(self.families[0], 35))
         right_section_layout.addWidget(schedule_title_widget)
 
         # define the schedule widget
@@ -204,6 +204,12 @@ class MainWindow(QMainWindow):
 
         # get the index of the current time so that it can be darkened
         now_index = self.em.get_now_index()
+
+        while schedule_layout.count():
+            item = schedule_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
 
         # loop through all the cells and add them
         for row in range(5):
@@ -240,7 +246,7 @@ class MainWindow(QMainWindow):
             temp = QLabel(major)
             temp.setStyleSheet("color: black")
             temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            temp.setFont(QFont(families[0], 18))
+            temp.setFont(QFont(self.families[0], 18))
             schedule_layout.addWidget(temp, i + 3, 1, 1, 2) # offset and spans multiple cols to make it look good
 
         # add the hour labels
@@ -249,7 +255,7 @@ class MainWindow(QMainWindow):
             temp.setStyleSheet("color: black")
             temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
             temp.setFixedHeight(30)
-            temp.setFont(QFont(families[0], 15))
+            temp.setFont(QFont(self.families[0], 15))
             schedule_layout.addWidget(temp, 2, i * 2 + 2, 1, 2) # offset and spans multiple cols to make it look good
 
         # define the layout of the tutor list
@@ -365,6 +371,8 @@ class MainWindow(QMainWindow):
             minutes_until_next = 60 - minutes_past_hour
 
         seconds_until_next = (minutes_until_next * 60) - seconds_past_minute
+
+        seconds_until_next = 5
 
         # schedule the update
         QTimer.singleShot(seconds_until_next * 1000, self.update_data)
