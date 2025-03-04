@@ -267,7 +267,7 @@ class ScheduleCell(QLabel):
         __init__(self, major, row, col, dark)
             defines the widget
     """
-    def __init__(self, major, row, col, dark):
+    def __init__(self, major, row, col, dark, start_index, end_index):
         """
         defines the widget
         :param major: the abbreviation of the major
@@ -276,6 +276,9 @@ class ScheduleCell(QLabel):
         :param dark: if the cell should be a little darker because it is the current hour
         """
         super().__init__()
+
+        if major.lower() == "c":
+            self.setFixedWidth(0)
 
         #define colors
         border_color = 'black'
@@ -305,6 +308,8 @@ class ScheduleCell(QLabel):
                     color = ECE_YELLOW
                 case "CP":
                     color = CMPE_ORAGNE
+                case "C":
+                    color = 'pink'
                 case _:
                     color = 'white'
 
@@ -337,15 +342,15 @@ class ScheduleCell(QLabel):
             right_border_style = 'dashed'
 
         #set the left border if we are at the start
-        if col == 0:
+        if col == start_index:
             left_border = border_color
             left_border_width = '3px'
 
-        #TODO this will need to not be a magic number
         #set the right border if we are at the end
-        if col == 15:
+        if col == end_index:
             right_border = border_color
             right_border_width = '3px'
+            right_border_style = 'solid'
 
         #set the style
         self.setStyleSheet(

@@ -48,7 +48,7 @@ class ExcelManager:
         url = os.environ["TUTOR_CENTER_PATH"]
         username = os.environ["TUTOR_CENTER_EMAIL"]
         password = os.environ["TUTOR_CENTER_PASSWORD"]
-        relative_url = "/sites/ENGRTCManagementTEST/Shared Documents/General/Tutoring Center Info/Schedule.xlsx"
+        relative_url = "/sites/ENGRTCManagementTEST/Shared Documents/General/Tutoring Center Info/Schedule - Copy.xlsx"
 
         # Authenticate
         ctx_auth = AuthenticationContext(url)
@@ -78,7 +78,15 @@ class ExcelManager:
 
         #if our list is up to date then do nothing
         if last_read > last_modified - timedelta(hours=7):
-            return
+            #return
+            pass
+
+        self.tutors = {}
+        self.monday_schedule = []
+        self.tuesday_schedule = []
+        self.wednesday_schedule = []
+        self.thursday_schedule = []
+        self.friday_schedule = []
 
         #get the schedule
         web = ctx.web
@@ -92,14 +100,36 @@ class ExcelManager:
         bytes_file_obj.seek(0)  # set file object to start
 
         #get the different schedules for the different days
-        self.monday_schedule =      pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=3, nrows=6).values.tolist()
-        self.tuesday_schedule =     pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=12, nrows=6).values.tolist()
-        self.wednesday_schedule =   pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=21, nrows=6).values.tolist()
-        self.thursday_schedule =    pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=30, nrows=6).values.tolist()
-        self.friday_schedule =      pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:Q', skiprows=39, nrows=6).values.tolist()
+        self.monday_schedule =      pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:AC', skiprows=3, nrows=6).values.tolist()
+        self.tuesday_schedule =     pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:AC', skiprows=12, nrows=6).values.tolist()
+        self.wednesday_schedule =   pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:AC', skiprows=21, nrows=6).values.tolist()
+        self.thursday_schedule =    pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:AC', skiprows=30, nrows=6).values.tolist()
+        self.friday_schedule =      pd.read_excel(bytes_file_obj, sheet_name='Print Schedule', usecols='B:AC', skiprows=39, nrows=6).values.tolist()
+
+        schedule_list = [self.monday_schedule, self.tuesday_schedule, self.wednesday_schedule, self.thursday_schedule, self.friday_schedule]
+
+        #simplify the schedules to just be when we are open on that day
+        for index, schedule in enumerate(schedule_list):
+            first_open_index = 28
+            last_open_index = 0
+
+            #find the earliest and the latest that we have a tutor here
+            for row in schedule:
+                for col, value in enumerate(row):
+                    if value.lower() != "n":
+                        if col < first_open_index:
+                            first_open_index = col
+                        elif col > last_open_index:
+                            last_open_index = col
+
+            last_open_index += 1
+
+            #set all the times that we are not open to "C" so that we can no not to include them
+            for row_index in range(len(schedule)):
+                schedule_list[index][row_index] = ["C"]*first_open_index + schedule_list[index][row_index][first_open_index:last_open_index] + ["C"]*(len(schedule_list[index][row_index]) - last_open_index)
 
         #get the all the schedule information for all the tutors and iterate through it
-        temp_tutor_schedule =       pd.read_excel(bytes_file_obj, sheet_name='Schedule', usecols='A:S', skiprows=10, nrows=200).values.tolist()
+        temp_tutor_schedule =       pd.read_excel(bytes_file_obj, sheet_name='Schedule', usecols='A:AE', skiprows=10, nrows=200).values.tolist()
         for row in temp_tutor_schedule:
             #get the name of the tutor
             tutor_name = row[0]
@@ -107,6 +137,10 @@ class ExcelManager:
             #ignore if it is empty
             if str(tutor_name) == "nan":
                 continue
+
+            for j in range(len(row)):
+                if str(row[j]) == "nan":
+                    row[j] = ""
 
             #if we have run into a tutor who it has not seen before
             if tutor_name.lower() not in self.tutors:
@@ -147,11 +181,8 @@ class ExcelManager:
 
         #save the schedule dictionary to daily_schedules.json
         with open("daily_schedules.json", 'w') as file:
-            #organize it in a list
-            temp_list = [self.monday_schedule, self.tuesday_schedule, self.wednesday_schedule, self.thursday_schedule, self.friday_schedule]
-
             #save the dictionary
-            json.dump(temp_list, file, indent=4)
+            json.dump(schedule_list, file, indent=4)
 
     def get_today_schedule(self):
         """
@@ -207,6 +238,9 @@ class ExcelManager:
             #get the tutors schedule for the day
             tutors_schedule = tutor["schedule"][day_of_week]
 
+            if len(tutors_schedule) == 16:
+                print(tutor)
+
             #see if the tutor is currently on shift
             if str(tutors_schedule[now_index]).lower() in {"cp", "m", "ce", "el", "b"}:
                 #loop until the tutor is not on shift
@@ -214,7 +248,7 @@ class ExcelManager:
                     #if the tutor is now not on shift
                     if tutors_schedule[j].lower() not in {"cp", "m", "ce", "el", "b"}:
                         #get the time block for the current value of j
-                        end_schedule = j / 2 + 9
+                        end_schedule = j / 2 + 7
 
                         #get the current hour and minute
                         current_hour = int(floor(end_schedule - 1) % 12 + 1)
@@ -228,7 +262,7 @@ class ExcelManager:
                 # fun python feature. This will only run if the for loop finished without breaking
                 else:
                     #get time block for the end of the day
-                    end_schedule = (len(tutors_schedule)) / 2 + 9
+                    end_schedule = (len(tutors_schedule)) / 2 + 7
 
                     # get the current hour and minute
                     current_hour = int(floor(end_schedule - 1) % 12 + 1)
@@ -258,13 +292,10 @@ class ExcelManager:
         fractional_hour = math.floor(now.timetuple().tm_min / 30) * 0.5
         hour = hour + fractional_hour
 
-        #shift the hour so that index 0 = 9am and then multiply by 2 to account for the half hours
-        return int((hour - 9) * 2)
+        #shift the hour so that index 0 = 7am and then multiply by 2 to account for the half hours
+        return int((hour - 7) * 2)
 
 #test the library
 if __name__ == "__main__":
     em = ExcelManager()
     em.fetch_schedule()
-
-    for i in em.get_on_shift():
-        print(i["here_until"])

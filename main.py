@@ -20,6 +20,7 @@ MAJOR_ABBREVIATIONS = {
 }
 MAJORS = ["MAE", "CMPE", "ECE", "CEE", "BENG"]
 MAJOR_ORDER = {"MAE": 0, "CMPE": 1, "ECE": 2, "CEE": 3, "BENG": 4}
+TUTOR_LIST_HEIGHT = 10
 
 class MainWindow(QMainWindow):
     """
@@ -166,7 +167,7 @@ class MainWindow(QMainWindow):
         sign_in_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sign_in_widget.setFont(QFont(self.families[0], 50))
         sign_in_widget.setFixedHeight(80)
-        description_widget = QLabel("Tutors are wearing colored\nlanyards and name tags")
+        description_widget = QLabel("Tutors are wearing colored\nlanyards according to the colors\nin the schedule below")
         description_widget.setStyleSheet("color: black")
         description_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         description_widget.setFont(QFont(self.families[0], 30))
@@ -211,21 +212,35 @@ class MainWindow(QMainWindow):
             if widget:
                 widget.deleteLater()
 
+        start_index = 28
+        end_index = 0
+
+        for i, value in enumerate(self.schedule[0]):
+            if value.lower() != "c" and i < start_index:
+                start_index = i
+            elif value.lower() != "c" and i > end_index:
+                end_index = i
+
         # loop through all the cells and add them
         for row in range(5):
-            for col in range(16):
+            for col in range(len(self.schedule[0])):
+                if col < start_index or col > end_index:
+                    continue
+
                 schedule_layout.addWidget(
                     ScheduleCell(
                         self.schedule[row][col], # the letter at the cell in the spreadsheet
                         row, # the current row for formatting
                         col, # the current col for formatting
-                        col == now_index # if this cell is for the current time slot and therefore needs to be dark
+                        col == now_index, # if this cell is for the current time slot and therefore needs to be dark
+                        start_index,
+                        end_index
                     ),
                     row + 3, # offset the position to account for labels and spacing
                     col + 3 # offset the position to account for labels and spacing
                 )
 
-        cell_width = int((self.screen_size.width() - tutor_list_widget.width() - 3 * self.spacing) / 19)
+        cell_width = int(schedule_widget.width() / (end_index - start_index - 1))
 
         # define spacers to make the layout look good and add them
         spacer = QLabel()
@@ -237,7 +252,8 @@ class MainWindow(QMainWindow):
         spacer3 = QLabel()
         spacer3.setFixedSize(QSize(cell_width, self.spacing))
         spacer3.setStyleSheet("background-color: transparent")
-        schedule_layout.addWidget(spacer, 8, 19)
+
+        schedule_layout.addWidget(spacer, 8, len(self.schedule[0]) + 3)
         schedule_layout.addWidget(spacer2, 1, 1)
         schedule_layout.addWidget(spacer3, 1, 2)
 
@@ -250,13 +266,24 @@ class MainWindow(QMainWindow):
             schedule_layout.addWidget(temp, i + 3, 1, 1, 2) # offset and spans multiple cols to make it look good
 
         # add the hour labels
-        for i in range(9):
-            temp = QLabel(f"{(i + 8) % 12 + 1}:00")
+        for i in range(15):
+            label_text = f"{(i + 6) % 12 + 1}:00"
+            if i * 2 < start_index or i * 2 > end_index + 1:
+                continue
+
+            temp = QLabel(label_text)
             temp.setStyleSheet("color: black")
             temp.setAlignment(Qt.AlignmentFlag.AlignCenter)
             temp.setFixedHeight(30)
             temp.setFont(QFont(self.families[0], 15))
-            schedule_layout.addWidget(temp, 2, i * 2 + 2, 1, 2) # offset and spans multiple cols to make it look good
+
+            #the first and last label are a little different so take care of them
+            if i * 2 == start_index:
+                schedule_layout.addWidget(temp, 2, 2, 1, start_index+2) # FIXME I have been having problems with this line. If the time changes you should check this out
+            elif i * 2 == end_index + 1:
+                schedule_layout.addWidget(temp, 2, i * 2 + 2, 1, 40)  # spanning 40 columns seems like a good way to make sure it spans to the end
+            else:
+                schedule_layout.addWidget(temp, 2, i * 2 + 2, 1, 2) # offset and spans multiple cols to make it look good
 
         # define the layout of the tutor list
         tutor_list_layout = QGridLayout()
@@ -284,7 +311,7 @@ class MainWindow(QMainWindow):
         majors_not_on_shift = ["MAE", "ECE", "CMPE", "CEE", "BENG"]
 
         # loop through every slot in the tutor list
-        for i in range(5):
+        for i in range(TUTOR_LIST_HEIGHT//2):
             for j in range(2):
                 # convert the row and col to a single index
                 display_order = 2 * i + j
@@ -312,7 +339,7 @@ class MainWindow(QMainWindow):
                 # if we have added every tutor
                 else:
                     # calculate how many spots wee need to fill
-                    spots_left = 10 - (i * 2 + j)
+                    spots_left = TUTOR_LIST_HEIGHT - (i * 2 + j)
 
                     # add the "major will be back" cards to the very end
                     if spots_left <= len(majors_not_on_shift):
