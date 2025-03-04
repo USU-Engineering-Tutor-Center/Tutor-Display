@@ -1,27 +1,17 @@
 # import modules
-from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWidget
-from PyQt6.QtCore import QTime, QTimer
+from PyQt6.QtGui import QGuiApplication, QFontDatabase, QFont
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWidget, QWidget, QVBoxLayout, QLabel, \
+    QHBoxLayout
+from PyQt6.QtCore import QTime, QTimer, QSize, Qt
 from numpy.ma.core import floor
 import sys
 
 # import custom modules
 from excel import ExcelManager
 import get_pictures
-from custom_widgets import *
-
-# define helper variables
-MAJOR_ABBREVIATIONS = {
-    "MAE":"Mechanical Engineer",
-    "ECE":"Electrical Engineer",
-    "CMPE":"Computer Engineer",
-    "BENG":"Biological Engineer",
-    "CEE":"Civil Engineer"
-}
-MAJORS = ["MAE", "CMPE", "ECE", "CEE", "BENG"]
-MAJOR_ORDER = {"MAE": 0, "CMPE": 1, "ECE": 2, "CEE": 3, "BENG": 4}
-TUTOR_LIST_HEIGHT = 10
-
+import custom_widgets
+from constants import *
+git commit -m "I refactored all the constants into their own file for better edit ability."
 class MainWindow(QMainWindow):
     """
     The main window of the program
@@ -228,7 +218,7 @@ class MainWindow(QMainWindow):
                     continue
 
                 schedule_layout.addWidget(
-                    ScheduleCell(
+                    custom_widgets.ScheduleCell(
                         self.schedule[row][col], # the letter at the cell in the spreadsheet
                         row, # the current row for formatting
                         col, # the current col for formatting
@@ -322,7 +312,7 @@ class MainWindow(QMainWindow):
 
                     # add a tutor card to the layout
                     tutor_list_layout.addWidget(
-                        TutorCard(
+                        custom_widgets.TutorCard(
                             tutor["name"], #the name of the tutor
                             f"Images/{tutor["profile_image"]}", # the path to the image
                             MAJOR_ABBREVIATIONS[tutor["major"]], # the name of the major
@@ -374,7 +364,7 @@ class MainWindow(QMainWindow):
                             next_in = "Tomorrow"
 
                         # add the widget
-                        tutor_list_layout.addWidget(WillReturn(current_major, next_in))
+                        tutor_list_layout.addWidget(custom_widgets.WillReturn(current_major, next_in))
                     else:
                         # add a fake widget
                         tutor_list_layout.addWidget(QWidget(), i, j)

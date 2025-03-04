@@ -2,22 +2,7 @@
 from PyQt6.QtGui import QPixmap, QPainter, QPainterPath, QColor, QPen, QFont, QFontDatabase
 from PyQt6.QtWidgets import QWidget, QLabel, QSizePolicy, QVBoxLayout, QFrame, QHBoxLayout
 from PyQt6.QtCore import Qt, QSize, QRectF
-
-#define constants
-MAE_RED = '#f23e2c'
-CEE_GREEN = '#2da12f'
-BENG_BLUE = '#296de3'
-ECE_YELLOW = '#edb50e'
-CMPE_ORAGNE = "#ed8218"
-TITLE_TEAL = "#00706d"
-BACK_BLUE = "#cce9e8"
-BACK_GREY = "#efefef"
-BORDER_GREY = "#d9d9d9"
-MAE_RED_DARK = '#b02d20'
-CEE_GREEN_DARK = '#185919'
-BENG_BLUE_DARK = '#224a8f'
-ECE_YELLOW_DARK = '#a67f0d'
-CMPE_ORAGNE_DARK = "#b56312"
+from constants import *
 
 class TutorCard(QFrame):
     """
