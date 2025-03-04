@@ -1,6 +1,6 @@
 # import modules
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWidget, QLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWidget
 from PyQt6.QtCore import QTime, QTimer
 from numpy.ma.core import floor
 import sys
@@ -398,8 +398,6 @@ class MainWindow(QMainWindow):
             minutes_until_next = 60 - minutes_past_hour
 
         seconds_until_next = (minutes_until_next * 60) - seconds_past_minute
-
-        seconds_until_next = 5
 
         # schedule the update
         QTimer.singleShot(seconds_until_next * 1000, self.update_data)
