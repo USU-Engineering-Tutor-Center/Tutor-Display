@@ -78,8 +78,7 @@ class ExcelManager:
 
         #if our list is up to date then do nothing
         if last_read > last_modified - timedelta(hours=7):
-            #return
-            pass
+            return
 
         self.tutors = {}
         self.monday_schedule = []
