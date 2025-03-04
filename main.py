@@ -11,7 +11,7 @@ from excel import ExcelManager
 import get_pictures
 import custom_widgets
 from constants import *
-git commit -m "I refactored all the constants into their own file for better edit ability."
+
 class MainWindow(QMainWindow):
     """
     The main window of the program
