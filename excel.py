@@ -62,23 +62,35 @@ class ExcelManager:
         ctx.execute_query()
         last_modified = file.properties["TimeLastModified"]
 
-        #read the saved json files and save them to variables
-        with open("tutor_data.json", "r") as file:
-            self.tutors = json.load(file)
+        do_update = False
 
-        with open("daily_schedules.json") as file:
-            temp_list = json.load(file)
-            self.monday_schedule = temp_list[0]
-            self.tuesday_schedule = temp_list[1]
-            self.wednesday_schedule = temp_list[2]
-            self.thursday_schedule = temp_list[3]
-            self.friday_schedule = temp_list[4]
+        try:
+            #read the saved json files and save them to variables
+            with open("tutor_data.json", "r") as file:
+                self.tutors = json.load(file)
+        except FileNotFoundError:
+            do_update = True
 
-        # find the last time we updated our list
-        last_read = datetime.strptime(self.tutors['last_fetch'], "%Y-%m-%d %H:%M:%S.%f")
+        last_read = None
+
+        try:
+            with open("daily_schedules.json") as file:
+                temp_list = json.load(file)
+                self.monday_schedule = temp_list[0]
+                self.tuesday_schedule = temp_list[1]
+                self.wednesday_schedule = temp_list[2]
+                self.thursday_schedule = temp_list[3]
+                self.friday_schedule = temp_list[4]
+
+            # find the last time we updated our list
+            last_read = datetime.strptime(self.tutors['last_fetch'], "%Y-%m-%d %H:%M:%S.%f")
+        except FileNotFoundError:
+            do_update = True
+        except KeyError:
+            do_update = True
 
         #if our list is up to date then do nothing
-        if last_read > last_modified - timedelta(hours=7):
+        if not do_update and last_read > last_modified - timedelta(hours=7):
             return
 
         self.tutors = {}

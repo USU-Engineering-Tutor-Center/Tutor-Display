@@ -1,9 +1,12 @@
 import os
+from dotenv import load_dotenv
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.files.file import File
 
 def get_pictures():
+    load_dotenv()
+
     # SharePoint site and credentials
     url = os.environ["TUTOR_CENTER_PATH"]
     username = os.environ["TUTOR_CENTER_EMAIL"]
