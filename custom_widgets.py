@@ -25,7 +25,7 @@ class TutorCard(QFrame):
         super().__init__()
 
         # define the font
-        font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSR.TTF")
+        font_id = QFontDatabase.addApplicationFont("Fonts/BRLNSR.TTF")
         if font_id < 0:
             print("Error loading font")
         families = QFontDatabase.applicationFontFamilies(font_id)
@@ -188,7 +188,7 @@ class WillReturn(QLabel):
         super().__init__()
 
         # define the font
-        font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSR.TTF")
+        font_id = QFontDatabase.addApplicationFont("Fonts/BRLNSR.TTF")
         if font_id < 0:
             print("Error loading font")
         families = QFontDatabase.applicationFontFamilies(font_id)

@@ -63,13 +63,13 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.update_ui)
 
         # define the bold font
-        bold_font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSB.TTF")
+        bold_font_id = QFontDatabase.addApplicationFont("Fonts/BRLNSB.TTF")
         if bold_font_id < 0:
             print("Error loading font")
         self.bold_families = QFontDatabase.applicationFontFamilies(bold_font_id)
 
         # define the normal font
-        font_id = QFontDatabase.addApplicationFont("berlin-sans-fb/BRLNSR.TTF")
+        font_id = QFontDatabase.addApplicationFont("Fonts/BRLNSR.TTF")
         if font_id < 0:
             print("Error loading font")
         self.families = QFontDatabase.applicationFontFamilies(font_id)
