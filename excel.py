@@ -1,5 +1,6 @@
 import json
 import math
+import os
 from numpy.ma.core import floor
 from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.client_context import ClientContext
