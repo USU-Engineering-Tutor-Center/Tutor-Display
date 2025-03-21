@@ -1,7 +1,7 @@
 #import modules
-from PyQt6.QtGui import QPixmap, QPainter, QPainterPath, QColor, QPen, QFont, QFontDatabase
-from PyQt6.QtWidgets import QWidget, QLabel, QSizePolicy, QVBoxLayout, QFrame, QHBoxLayout
-from PyQt6.QtCore import Qt, QSize, QRectF
+from PySide6.QtGui import QPixmap, QPainter, QPainterPath, QColor, QPen, QFont, QFontDatabase
+from PySide6.QtWidgets import QWidget, QLabel, QSizePolicy, QVBoxLayout, QFrame, QHBoxLayout
+from PySide6.QtCore import Qt, QSize, QRectF
 from constants import *
 
 class TutorCard(QFrame):

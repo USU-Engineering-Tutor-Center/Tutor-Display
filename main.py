@@ -1,8 +1,8 @@
 # import modules
-from PyQt6.QtGui import QGuiApplication, QFontDatabase, QFont
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWidget, QWidget, QVBoxLayout, QLabel, \
+from PySide6.QtGui import QGuiApplication, QFontDatabase, QFont
+from PySide6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWidget, QWidget, QVBoxLayout, QLabel, \
     QHBoxLayout
-from PyQt6.QtCore import QTime, QTimer, QSize, Qt
+from PySide6.QtCore import QTime, QTimer, QSize, Qt
 from numpy.ma.core import floor
 import sys
 
