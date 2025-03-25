@@ -4,3 +4,4 @@ Images/
 __pycache__/
 daily_schedules.json
 tutor_data.json
+venv/

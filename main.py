@@ -46,14 +46,14 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.hidden_widget)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-
+        print("getting pictures")
         # update the pictures
         get_pictures.get_pictures()
-
+        print("updateing schedule")
         # update the schedules
         self.em = ExcelManager()
         self.schedule = self.em.get_today_schedule()
-
+        
         # manually put them in rainbow order
         self.schedule[1], self.schedule[2], self.schedule[3], self.schedule[4] = self.schedule[4], self.schedule[3], self.schedule[1], self.schedule[2]
 
@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.timer = QTimer(self)
         # noinspection PyUnresolvedReferences
         self.timer.timeout.connect(self.update_ui)
-
+        print("defining fonts")
         # define the bold font
         bold_font_id = QFontDatabase.addApplicationFont("Fonts/BRLNSB.TTF")
         if bold_font_id < 0:
@@ -73,13 +73,13 @@ class MainWindow(QMainWindow):
         if font_id < 0:
             print("Error loading font")
         self.families = QFontDatabase.applicationFontFamilies(font_id)
-
+        print("update_ui")
         # build the layout
         self.update_ui()
-
+        print("sheduling updates")
         # start the scheduled updates
         self.schedule_next_update()
-
+        print("showing")
         # show the screen
         self.showFullScreen()
 
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
         title = QLabel("Welcome to The Engineering Tutor Center")
         title.setFixedSize(QSize(self.screen_size.width(), int(self.screen_size.width() * 0.06)))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet(f"background-color: {TITLE_TEAL}; font-weight: 700")
+        title.setStyleSheet(f"background-color: {TITLE_TEAL}; font-weight: 700; color: white")
         title.setFont(QFont(self.bold_families[0], 60))
         top_layout.addWidget(title)
 
@@ -172,7 +172,8 @@ class MainWindow(QMainWindow):
             f"background-color: {TITLE_TEAL}; "
             f"border-top-left-radius: {self.corner_radius}; "
             f"border-top-right-radius: {self.corner_radius}; "
-            f"font-weight: 700"
+            f"font-weight: 700;"
+            f"color: white"
         )
         schedule_title_widget.setFont(QFont(self.families[0], 35))
         right_section_layout.addWidget(schedule_title_widget)
@@ -314,10 +315,10 @@ class MainWindow(QMainWindow):
                     tutor_list_layout.addWidget(
                         custom_widgets.TutorCard(
                             tutor["name"], #the name of the tutor
-                            f"Images/{tutor["profile_image"]}", # the path to the image
+                            f"Images/{tutor['profile_image']}", # the path to the image
                             MAJOR_ABBREVIATIONS[tutor["major"]], # the name of the major
                             tutor["academic_class"], #softmore, junior, etc
-                            f"Here until {tutor["here_until"]}" # when the tutor is leaving
+                            f"Here until {tutor['here_until']}" # when the tutor is leaving
                         ),
                         i,
                         j
@@ -388,6 +389,7 @@ class MainWindow(QMainWindow):
             minutes_until_next = 60 - minutes_past_hour
 
         seconds_until_next = (minutes_until_next * 60) - seconds_past_minute
+        seconds_until_next = 5
 
         # schedule the update
         QTimer.singleShot(seconds_until_next * 1000, self.update_data)
