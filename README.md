@@ -38,12 +38,20 @@ pip install -r requirements.txt
 
 ### 4. Create the `.env` File
 
-Before running the application, create a `.env` file in the project directory using the following template:
+Before running the application, create a file called`'.env'` in the project directory using the following template:
 
 ```
-TUTOR_CENTER_PATH="URL"
+TUTOR_CENTER_PATH="URL TO THE MAIN TUTOR CENTER SHAREPOINT"
 TUTOR_CENTER_EMAIL="USERNAME"
 TUTOR_CENTER_PASSWORD="PASSWORD"
+```
+
+You can find the Sharepoint url by going to the root directory of the sharepoint and then copy the url.
+
+### 5. Create the Directory for the Tutor Images
+
+```
+mkdir Images
 ```
 
 ### 5. Run the Application
