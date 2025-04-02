@@ -6,6 +6,7 @@ from PySide6.QtCore import QTime, QTimer, QSize, Qt
 from numpy.ma.core import floor
 import sys
 import subprocess
+import uuid
 
 # import custom modules
 from excel import ExcelManager
@@ -47,11 +48,13 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.hidden_widget)
 
         try:
-                subprocess.check_call(['ping', '-c', '1', '8.8.8.8'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print('Connected to the internet')
-        except:
-                print('Not connected to the internet, quitting')
-                sys.exit(0)
+            subprocess.check_call(['ping', '-c', '1', '8.8.8.8'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print('Connected to the internet')
+        except subprocess.CalledProcessError:
+            mac = ':'.join(f'{(uuid.getnode() >> i) & 0xFF:02x}' for i in range(0, 48, 8)[::-1])
+            print(f'Not connected to the internet. Please check the ethernet cord or re-register the device at netreg.usu.edu using mac address {mac}. Press enter to acknowledge')
+            input()
+            sys.exit(0)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         print("getting pictures")
