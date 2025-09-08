@@ -10,7 +10,6 @@ import uuid
 
 # import custom modules
 from excel import ExcelManager
-import get_pictures
 import custom_widgets
 from constants import *
 
@@ -60,7 +59,6 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         print("getting pictures")
         # update the pictures
-        get_pictures.get_pictures()
         print("updateing schedule")
         # update the schedules
         self.em = ExcelManager()
