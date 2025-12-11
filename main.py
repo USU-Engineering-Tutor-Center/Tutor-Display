@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QGridLayout, QStackedWi
 from PySide6.QtCore import QTime, QTimer, QSize, Qt
 from numpy.ma.core import floor
 import sys
-import subprocess
+from socket import socket,  AF_INET, SOCK_STREAM, error
 import uuid
 
 # import custom modules
@@ -47,9 +47,13 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.hidden_widget)
 
         try:
-            subprocess.check_call(['ping', '-c', '1', '8.8.8.8'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            test = socket(AF_INET, SOCK_STREAM)
+            test.settimeout(3)
+            test.connect(("8.8.8.8", 53))
+            test.close()
+
             print('Connected to the internet')
-        except subprocess.CalledProcessError:
+        except error:
             mac = ':'.join(f'{(uuid.getnode() >> i) & 0xFF:02x}' for i in range(0, 48, 8)[::-1])
             print(f'\nNot connected to the internet. Please check the ethernet cord or re-register the device at netreg.usu.edu using mac address {mac}. Press enter to acknowledge')
             input()
