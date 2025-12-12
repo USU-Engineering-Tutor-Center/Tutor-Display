@@ -40,9 +40,9 @@ class ExcelManager:
         Uses caching to avoid reprocessing if the file hasn't changed since the last run.
         """
         # Define local file paths
-        schedule_file_path = "data/Schedule.xlsx"
-        tutor_cache_path = "data/tutor_data.json"
-        schedule_cache_path = "data/daily_schedules.json"
+        schedule_file_path = "/data/Schedule.xlsx"
+        tutor_cache_path = "/data/tutor_data.json"
+        schedule_cache_path = "/data/daily_schedules.json"
 
         # --- Check if local Excel file exists ---
         if not os.path.exists(schedule_file_path):
