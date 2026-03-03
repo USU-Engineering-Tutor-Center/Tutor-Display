@@ -15,7 +15,7 @@ ECE_YELLOW_DARK = '#a67f0d'
 CMPE_ORAGNE_DARK = "#b56312"
 
 #how many rows should the tutor list have
-TUTOR_LIST_HEIGHT = 10
+TUTOR_LIST_HEIGHT = 12
 
 #useful sorting and conversion
 MAJOR_ABBREVIATIONS = {

@@ -53,7 +53,7 @@ class TutorCard(QFrame):
         # define the widget for the name
         name_widget = QLabel(tutor_name)
         name_widget.setStyleSheet("color: black")
-        name_widget.setFont(QFont(families[0], 25))
+        name_widget.setFont(QFont(families[0], int((self.height/TUTOR_LIST_HEIGHT)*0.45)))
         details_layout.addWidget(name_widget)
 
         # get the border color from the tutors major
