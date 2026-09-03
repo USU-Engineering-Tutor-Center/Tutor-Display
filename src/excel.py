@@ -166,7 +166,7 @@ class ExcelManager:
                 }
 
             # Add the schedule and the major to the tutor
-            self.tutors[row[0].lower()]["schedule"][row[1]] = row[3:]
+            self.tutors[row[0].lower()]["schedule"][row[1][1:]] = row[3:]
             self.tutors[row[0].lower()]["major"] = row[2]
 
         # Get the information from all the tutors and iterate over it
